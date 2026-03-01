@@ -1,0 +1,475 @@
+{
+    "global_architecture": {
+      "meta": {
+        "framework_version": "1.0",
+        "last_updated": "2025-06-20",
+        "description": "Comprehensive mapping of global systems and their interdependencies"
+      },
+      "core_systems": {
+        "economic_architecture": {
+          "id": "ECON",
+          "subsystems": {
+            "monetary_system": {
+              "components": ["central_banks", "reserve_currencies", "exchange_rates", "interest_rates"],
+              "key_actors": ["federal_reserve", "ecb", "boc", "boj", "pboc"],
+              "power_dynamics": {
+                "usd_hegemony": 0.58,
+                "euro_influence": 0.20,
+                "yuan_rising": 0.15,
+                "other_currencies": 0.07
+              }
+            },
+            "trade_system": {
+              "components": ["wto", "bilateral_agreements", "trade_blocs", "supply_chains"],
+              "major_flows": {
+                "goods": ["manufactured_products", "raw_materials", "energy", "food"],
+                "services": ["financial", "digital", "logistics", "professional"],
+                "capital": ["fdi", "portfolio_investment", "sovereign_funds", "private_equity"]
+              }
+            },
+            "financial_system": {
+              "components": ["banking", "capital_markets", "insurance", "fintech"],
+              "global_hubs": ["new_york", "london", "hong_kong", "singapore", "tokyo"],
+              "systemic_risks": ["debt_levels", "asset_bubbles", "contagion_effects"]
+            }
+          },
+          "vulnerability_index": 0.7,
+          "change_drivers": ["technological_disruption", "demographic_shifts", "climate_impacts", "geopolitical_tensions"]
+        },
+        "geopolitical_architecture": {
+          "id": "GEOP",
+          "subsystems": {
+            "power_structure": {
+              "superpowers": {
+                "united_states": {
+                  "military_power": 0.35,
+                  "economic_power": 0.24,
+                  "soft_power": 0.30,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "global",
+                  "alliance_network": ["nato", "quad", "aukus", "anzus", "rio_treaty", "bilateral_defense_treaties"],
+                  "key_strengths": ["technological_innovation", "financial_dominance", "military_projection", "cultural_influence"]
+                },
+                "china": {
+                  "military_power": 0.20,
+                  "economic_power": 0.18,
+                  "soft_power": 0.12,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "expanding",
+                  "alliance_network": ["bri", "sco", "brics_plus", "rcep"],
+                  "key_strengths": ["manufacturing_capacity", "infrastructure_investment", "economic_growth", "technological_advancement"]
+                }
+              },
+              "great_powers": {
+                "russia": {
+                  "military_power": 0.15,
+                  "economic_power": 0.03,
+                  "soft_power": 0.05,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "regional_plus",
+                  "alliance_network": ["csto", "eaeu", "wagner_operations"],
+                  "key_strengths": ["nuclear_arsenal", "energy_resources", "military_technology", "geographic_advantage"]
+                },
+                "india": {
+                  "military_power": 0.08,
+                  "economic_power": 0.08,
+                  "soft_power": 0.08,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "regional_plus",
+                  "alliance_network": ["quad", "non_aligned_leadership", "bilateral_partnerships"],
+                  "key_strengths": ["demographic_dividend", "technology_services", "democratic_legitimacy", "strategic_autonomy"]
+                },
+                "united_kingdom": {
+                  "military_power": 0.04,
+                  "economic_power": 0.06,
+                  "soft_power": 0.15,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "global_limited",
+                  "alliance_network": ["nato", "aukus", "commonwealth", "five_eyes"],
+                  "key_strengths": ["financial_services", "intelligence_capabilities", "diplomatic_networks", "soft_power"]
+                },
+                "france": {
+                  "military_power": 0.04,
+                  "economic_power": 0.06,
+                  "soft_power": 0.12,
+                  "nuclear_weapons": "yes",
+                  "global_reach": "global_limited",
+                  "alliance_network": ["nato", "eu", "francophone_africa", "indo_pacific_partnerships"],
+                  "key_strengths": ["nuclear_technology", "aerospace_industry", "african_influence", "cultural_soft_power"]
+                },
+                "germany": {
+                  "military_power": 0.02,
+                  "economic_power": 0.09,
+                  "soft_power": 0.10,
+                  "nuclear_weapons": "no",
+                  "global_reach": "economic_global",
+                  "alliance_network": ["nato", "eu_leadership", "g7"],
+                  "key_strengths": ["industrial_base", "technological_innovation", "economic_influence", "institutional_leadership"]
+                },
+                "japan": {
+                  "military_power": 0.03,
+                  "economic_power": 0.07,
+                  "soft_power": 0.12,
+                  "nuclear_weapons": "no",
+                  "global_reach": "economic_global",
+                  "alliance_network": ["us_alliance", "quad", "rcep", "cptpp"],
+                  "key_strengths": ["technological_innovation", "manufacturing_excellence", "cultural_influence", "financial_resources"]
+                }
+              },
+              "emerging_powers": {
+                "brazil": {
+                  "military_power": 0.02,
+                  "economic_power": 0.04,
+                  "soft_power": 0.06,
+                  "nuclear_weapons": "no",
+                  "global_reach": "regional",
+                  "alliance_network": ["brics", "mercosur", "unasur"],
+                  "key_strengths": ["natural_resources", "agricultural_capacity", "regional_leadership", "energy_transition"]
+                },
+                "turkey": {
+                  "military_power": 0.03,
+                  "economic_power": 0.02,
+                  "soft_power": 0.04,
+                  "nuclear_weapons": "no",
+                  "global_reach": "regional",
+                  "alliance_network": ["nato", "turkic_council", "regional_partnerships"],
+                  "key_strengths": ["geographic_position", "military_industry", "regional_influence", "energy_transit"]
+                },
+                "saudi_arabia": {
+                  "military_power": 0.02,
+                  "economic_power": 0.02,
+                  "soft_power": 0.03,
+                  "nuclear_weapons": "no",
+                  "global_reach": "regional_plus",
+                  "alliance_network": ["gcc", "arab_league", "opec_plus"],
+                  "key_strengths": ["energy_resources", "financial_reserves", "religious_influence", "strategic_location"]
+                },
+                "south_korea": {
+                  "military_power": 0.02,
+                  "economic_power": 0.04,
+                  "soft_power": 0.08,
+                  "nuclear_weapons": "no",
+                  "global_reach": "economic_global",
+                  "alliance_network": ["us_alliance", "rcep", "bilateral_partnerships"],
+                  "key_strengths": ["technological_innovation", "cultural_exports", "manufacturing_capacity", "democratic_model"]
+                },
+                "australia": {
+                  "military_power": 0.015,
+                  "economic_power": 0.03,
+                  "soft_power": 0.05,
+                  "nuclear_weapons": "no",
+                  "global_reach": "regional_plus",
+                  "alliance_network": ["aukus", "quad", "anzus", "five_eyes"],
+                  "key_strengths": ["natural_resources", "strategic_location", "intelligence_capabilities", "democratic_stability"]
+                },
+                "canada": {
+                  "military_power": 0.01,
+                  "economic_power": 0.04,
+                  "soft_power": 0.07,
+                  "nuclear_weapons": "no",
+                  "global_reach": "global_limited",
+                  "alliance_network": ["nato", "g7", "five_eyes", "usmca"],
+                  "key_strengths": ["natural_resources", "technological_innovation", "multilateral_leadership", "democratic_values"]
+                }
+              },
+              "regional_powers": {
+                "iran": {
+                  "military_power": 0.02,
+                  "economic_power": 0.01,
+                  "soft_power": 0.02,
+                  "nuclear_weapons": "threshold",
+                  "influence_network": ["axis_of_resistance", "shia_networks", "proxy_forces"]
+                },
+                "israel": {
+                  "military_power": 0.015,
+                  "economic_power": 0.01,
+                  "soft_power": 0.03,
+                  "nuclear_weapons": "undeclared",
+                  "influence_network": ["us_partnership", "abraham_accords", "tech_innovation"]
+                },
+                "egypt": {
+                  "military_power": 0.015,
+                  "economic_power": 0.01,
+                  "soft_power": 0.03,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["arab_league", "african_union", "suez_control"]
+                },
+                "indonesia": {
+                  "military_power": 0.01,
+                  "economic_power": 0.03,
+                  "soft_power": 0.04,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["asean_leadership", "g20", "oic"]
+                },
+                "nigeria": {
+                  "military_power": 0.01,
+                  "economic_power": 0.01,
+                  "soft_power": 0.03,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["ecowas", "african_union", "commonwealth"]
+                },
+                "south_africa": {
+                  "military_power": 0.005,
+                  "economic_power": 0.01,
+                  "soft_power": 0.04,
+                  "nuclear_weapons": "former",
+                  "influence_network": ["brics", "sadc", "african_union"]
+                },
+                "pakistan": {
+                  "military_power": 0.02,
+                  "economic_power": 0.01,
+                  "soft_power": 0.02,
+                  "nuclear_weapons": "yes",
+                  "influence_network": ["sco", "oic", "cpec"]
+                },
+                "mexico": {
+                  "military_power": 0.005,
+                  "economic_power": 0.03,
+                  "soft_power": 0.04,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["usmca", "pacific_alliance", "g20"]
+                },
+                "argentina": {
+                  "military_power": 0.003,
+                  "economic_power": 0.01,
+                  "soft_power": 0.02,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["mercosur", "g20", "unasur"]
+                },
+                "poland": {
+                  "military_power": 0.01,
+                  "economic_power": 0.015,
+                  "soft_power": 0.03,
+                  "nuclear_weapons": "no",
+                  "influence_network": ["nato", "eu", "v4_group"]
+                },
+                "netherlands": {
+                  "military_power": 0.008,
+                  "economic_power": 0.02,
+                  "soft_power": 0.04,
+                  "nuclear_weapons": "host",
+                  "influence_network": ["nato", "eu", "international_law"]
+                },
+                "italy": {
+                  "military_power": 0.01,
+                  "economic_power": 0.05,
+                  "soft_power": 0.06,
+                  "nuclear_weapons": "host",
+                  "influence_network": ["nato", "eu", "g7", "mediterranean"]
+                }
+              }
+            },
+            "international_institutions": {
+              "security": ["un_security_council", "nato", "regional_orgs"],
+              "economic": ["imf", "world_bank", "wto", "g7", "g20"],
+              "governance": ["un_system", "international_courts", "treaty_regimes"]
+            },
+            "conflict_zones": {
+              "active_conflicts": ["ukraine_russia", "middle_east", "south_china_sea", "cyber_domain"],
+              "potential_flashpoints": ["taiwan", "iran_nuclear", "india_pakistan", "arctic"]
+            }
+          }
+        },
+        "technological_architecture": {
+          "id": "TECH",
+          "subsystems": {
+            "digital_infrastructure": {
+              "components": ["internet_backbone", "satellite_networks", "undersea_cables", "data_centers"],
+              "control_points": {
+                "us_dominance": ["tech_giants", "dns_control", "chip_design"],
+                "chinese_alternative": ["great_firewall", "digital_silk_road", "tech_champions"],
+                "european_sovereignty": ["gdpr", "digital_markets_act", "tech_regulation"]
+              }
+            },
+            "emerging_technologies": {
+              "artificial_intelligence": {
+                "leaders": ["us_private_sector", "chinese_state_led", "eu_regulated"],
+                "applications": ["military", "surveillance", "economic", "social"],
+                "risks": ["job_displacement", "bias", "autonomous_weapons", "control"]
+              },
+              "quantum_computing": {
+                "implications": ["cryptography_obsolescence", "computational_advantage", "secure_communications"],
+                "leaders": ["us", "china", "eu", "canada"]
+              },
+              "biotechnology": {
+                "applications": ["pharmaceuticals", "agriculture", "enhancement", "weapons"],
+                "ethical_considerations": ["privacy", "equity", "safety", "sovereignty"]
+              }
+            }
+          }
+        },
+        "environmental_architecture": {
+          "id": "ENV",
+          "subsystems": {
+            "climate_system": {
+              "current_state": {
+                "global_temperature_rise": 1.2,
+                "co2_concentration": 420,
+                "sea_level_rise_rate": 3.4
+              },
+              "tipping_points": ["arctic_ice", "amazon_rainforest", "permafrost", "ocean_currents"],
+              "regional_impacts": {
+                "water_stress": ["middle_east", "north_africa", "central_asia"],
+                "sea_level_rise": ["island_nations", "coastal_cities", "deltas"],
+                "extreme_weather": ["increased_frequency", "higher_intensity", "economic_damage"]
+              }
+            },
+            "resource_constraints": {
+              "critical_minerals": ["lithium", "rare_earths", "cobalt", "copper"],
+              "energy_transition": ["renewable_capacity", "storage", "grid_modernization"],
+              "food_security": ["arable_land", "water_availability", "crop_yields"]
+            }
+          }
+        },
+        "social_architecture": {
+          "id": "SOC",
+          "subsystems": {
+            "demographic_trends": {
+              "aging_societies": ["japan", "south_korea", "germany", "italy"],
+              "youth_bulge": ["sub_saharan_africa", "south_asia", "middle_east"],
+              "urbanization": ["mega_cities", "rural_urban_migration", "infrastructure_pressure"]
+            },
+            "social_cohesion": {
+              "inequality_levels": {
+                "within_countries": "rising_in_many",
+                "between_countries": "slowly_declining",
+                "implications": ["political_instability", "migration_pressure", "social_unrest"]
+              },
+              "identity_politics": ["nationalism", "populism", "ethnic_tensions", "religious_conflicts"]
+            },
+            "information_ecosystem": {
+              "media_landscape": ["traditional_media_decline", "social_media_dominance", "platform_power"],
+              "disinformation": ["state_actors", "non_state_actors", "algorithmic_amplification"],
+              "epistemic_crisis": ["truth_fragmentation", "polarization", "trust_erosion"]
+            }
+          }
+        }
+      },
+      "change_drivers": {
+        "primary_drivers": {
+          "technological_acceleration": {
+            "impact_vectors": ["automation", "connectivity", "data_analytics", "biotechnology"],
+            "affected_systems": ["ECON", "GEOP", "SOC", "ENV"],
+            "feedback_loops": {
+              "positive": ["network_effects", "learning_curves", "capital_accumulation"],
+              "negative": ["digital_divides", "job_displacement", "surveillance_concerns"]
+            }
+          },
+          "climate_change": {
+            "impact_vectors": ["physical_risks", "transition_risks", "systemic_risks"],
+            "affected_systems": ["ENV", "ECON", "GEOP", "SOC"],
+            "feedback_loops": {
+              "positive": ["green_tech_innovation", "international_cooperation"],
+              "negative": ["resource_conflicts", "migration_flows", "economic_disruption"]
+            }
+          },
+          "demographic_transition": {
+            "impact_vectors": ["aging_populations", "migration_flows", "urbanization", "education_levels"],
+            "affected_systems": ["SOC", "ECON", "GEOP"],
+            "feedback_loops": {
+              "positive": ["human_capital_development", "innovation_capacity"],
+              "negative": ["fiscal_pressure", "social_tensions", "political_instability"]
+            }
+          },
+          "geopolitical_competition": {
+            "impact_vectors": ["great_power_rivalry", "alliance_formation", "economic_decoupling", "arms_races"],
+            "affected_systems": ["GEOP", "ECON", "TECH", "SOC"],
+            "feedback_loops": {
+              "positive": ["innovation_competition", "institutional_strengthening"],
+              "negative": ["fragmentation", "inefficiency", "conflict_risk"]
+            }
+          }
+        },
+        "secondary_drivers": {
+          "economic_inequality": {
+            "manifestations": ["wealth_concentration", "social_mobility_decline", "political_capture"],
+            "affected_systems": ["SOC", "ECON", "GEOP"]
+          },
+          "information_revolution": {
+            "manifestations": ["data_explosion", "algorithmic_governance", "epistemic_fragmentation"],
+            "affected_systems": ["SOC", "GEOP", "TECH"]
+          },
+          "resource_scarcity": {
+            "manifestations": ["water_stress", "mineral_competition", "energy_transition"],
+            "affected_systems": ["ENV", "ECON", "GEOP"]
+          }
+        }
+      },
+      "interdependency_matrix": {
+        "system_interactions": {
+          "ECON_GEOP": {
+            "strength": 0.9,
+            "nature": "bidirectional",
+            "mechanisms": ["economic_sanctions", "trade_wars", "currency_competition", "investment_flows"],
+            "examples": ["us_china_trade_war", "russian_sanctions", "swift_exclusions"]
+          },
+          "TECH_GEOP": {
+            "strength": 0.8,
+            "nature": "bidirectional",
+            "mechanisms": ["tech_competition", "cyber_warfare", "digital_sovereignty", "innovation_races"],
+            "examples": ["chip_war", "huawei_restrictions", "tiktok_concerns"]
+          },
+          "ENV_ECON": {
+            "strength": 0.7,
+            "nature": "bidirectional",
+            "mechanisms": ["carbon_pricing", "stranded_assets", "green_investment", "physical_damages"],
+            "examples": ["eu_carbon_border_tax", "fossil_fuel_divestment", "climate_damages"]
+          },
+          "SOC_GEOP": {
+            "strength": 0.6,
+            "nature": "bidirectional",
+            "mechanisms": ["domestic_politics", "migration_flows", "cultural_influence", "identity_conflicts"],
+            "examples": ["populist_movements", "refugee_crises", "cultural_wars"]
+          },
+          "TECH_SOC": {
+            "strength": 0.8,
+            "nature": "bidirectional",
+            "mechanisms": ["social_media_influence", "digital_divides", "automation_impacts", "surveillance"],
+            "examples": ["social_media_polarization", "gig_economy", "ai_bias"]
+          },
+          "ENV_SOC": {
+            "strength": 0.5,
+            "nature": "bidirectional",
+            "mechanisms": ["climate_migration", "environmental_justice", "lifestyle_changes", "activism"],
+            "examples": ["pacific_island_displacement", "environmental_movements"]
+          }
+        }
+      },
+      "scenario_pathways": {
+        "cooperative_multipolarity": {
+          "probability": 0.25,
+          "characteristics": ["managed_competition", "institutional_cooperation", "shared_challenges_focus"],
+          "drivers": ["climate_urgency", "economic_interdependence", "technological_cooperation"]
+        },
+        "fragmented_bipolarity": {
+          "probability": 0.35,
+          "characteristics": ["us_china_blocks", "technological_decoupling", "proxy_competitions"],
+          "drivers": ["strategic_competition", "domestic_pressures", "alliance_consolidation"]
+        },
+        "chaotic_multipolarity": {
+          "probability": 0.30,
+          "characteristics": ["institutional_breakdown", "regional_conflicts", "economic_fragmentation"],
+          "drivers": ["climate_shocks", "technological_disruption", "social_instability"]
+        },
+        "hegemonic_stability": {
+          "probability": 0.10,
+          "characteristics": ["single_power_dominance", "institutional_renewal", "technological_leadership"],
+          "drivers": ["breakthrough_innovations", "competitor_decline", "institutional_adaptation"]
+        }
+      },
+      "monitoring_indicators": {
+        "early_warning_signals": {
+          "economic": ["debt_sustainability_ratios", "trade_flow_disruptions", "currency_volatility"],
+          "geopolitical": ["alliance_cohesion_indices", "conflict_escalation_metrics", "diplomatic_engagement_levels"],
+          "technological": ["innovation_concentration", "cyber_incident_frequency", "tech_transfer_restrictions"],
+          "environmental": ["climate_tipping_point_proximity", "resource_price_volatility", "extreme_weather_frequency"],
+          "social": ["inequality_measures", "social_trust_surveys", "political_polarization_indices"]
+        },
+        "system_health_metrics": {
+          "resilience": ["adaptive_capacity", "redundancy_levels", "recovery_speed"],
+          "stability": ["volatility_measures", "shock_absorption", "equilibrium_maintenance"],
+          "efficiency": ["resource_allocation", "information_flow", "coordination_effectiveness"]
+        }
+      }
+    }
+  }
