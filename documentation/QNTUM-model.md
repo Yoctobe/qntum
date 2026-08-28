@@ -105,11 +105,9 @@ States: **Inactive** → **Formation** → **Stable** → **Decay**.
 ## Key equation recap
 
 **Default (bounded):** $\tilde{M} = M / \max_k |M_k|$, then
-$$
-\boxed{
-M_i(t+1) = B_i + \alpha\, M_i(t) + \beta\, \Phi(E_i, t)\, \sum_{j} I_{ij}\, \tilde{M}_j(t)
-}
-$$
+
+$$\boxed{M_i(t+1) = B_i + \alpha\, M_i(t) + \beta\, \Phi(E_i, t)\, \sum_{j} I_{ij}\, \tilde{M}_j(t)}$$
+
 then scale if $\max_i |M_i(t+1)| > 1$ and clamp to $[-1, 1]$.
 
 **Linear dynamics:** $M(t+1) = B + \alpha\, M(t) + \beta\,\Phi\, (I\,M(t))$ (no normalisation, no clamp). With $\alpha=0$, $\beta=1$, $\Phi=1$: $M(t+1) = B + I\,M(t)$.
