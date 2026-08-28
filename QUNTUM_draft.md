@@ -1,6 +1,7 @@
 # QNTUM: A Quantified Network of Temporal Unfolding Magnitudes for Interpretable, Editable Multivariate Forecasting
 
-Ayoub Bensakhria
+Ayoub Bensakhria  
+ayoub.bensakhria@yoctobe.com
 
 ---
 

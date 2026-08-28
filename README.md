@@ -25,9 +25,9 @@ $$
 
 | Term | Role |
 |------|------|
-| \(\alpha\, M_i(t)\) | Memory — persistence of own magnitude |
-| \(\beta\, \Phi \sum_j I_{ij} \tilde{M}_j\) | Network influence — weighted couplings, gated by phase |
-| \(B_i\) | Base / drift |
+| `α · M_i(t)` | Memory — persistence of own magnitude |
+| `β · Φ · ΣⱼIᵢⱼ M̃ⱼ(t)` | Network influence — weighted couplings, gated by phase |
+| `Bᵢ` | Base / drift |
 
 Full theory: [`documentation/QNTUM-model.md`](documentation/QNTUM-model.md).
 
