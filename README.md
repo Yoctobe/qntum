@@ -42,9 +42,9 @@ Each factor is wrapped in an event $E_i$ with start $t_0$, formation $t_f$, and 
 $$
 \Phi(E_i, t) =
 \begin{cases}
-0 & t < t_0 \\[4pt]
-(t - t_0)/t_f & \text{formation} \\[4pt]
-1 & \text{stable} \\[4pt]
+0 & t < t_0 \\
+(t - t_0)/t_f & \text{formation} \\
+1 & \text{stable} \\
 e^{-(t - (t_0 + t_f + \tau))/\tau} & \text{decay}
 \end{cases}
 $$

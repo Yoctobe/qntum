@@ -119,9 +119,9 @@ The **phase function** $\Phi(E_i, t) \in [0, 1]$ is the event's activation level
 $$
 \Phi(E_i, t) =
 \begin{cases}
-0 & t < t_0 \quad \text{(inactive)}\\[4pt]
-\dfrac{t - t_0}{t_f} & t_0 \le t < t_0 + t_f \quad \text{(formation, } t_f > 0\text{)}\\[8pt]
-1 & t_0 + t_f \le t < t_0 + t_f + \tau \quad \text{(stable)}\\[4pt]
+0 & t < t_0 \quad \text{(inactive)}\\
+\dfrac{t - t_0}{t_f} & t_0 \le t < t_0 + t_f \quad \text{(formation, } t_f > 0\text{)}\\
+1 & t_0 + t_f \le t < t_0 + t_f + \tau \quad \text{(stable)}\\
 e^{-\left(t - (t_0 + t_f + \tau)\right)/\tau} & t \ge t_0 + t_f + \tau \quad \text{(decay)}.
 \end{cases}
 $$
@@ -186,7 +186,7 @@ z_t \;=\; \frac{d_t - m}{1.4826 \cdot \mathrm{MAD}}, \qquad
 m = \mathrm{median}(d), \quad \mathrm{MAD} = \mathrm{median}\big(|d - m|\big),
 $$
 
-where the constant $1.4826 \approx 1/\Phi^{-1}(3/4)$ makes the MAD a consistent estimate of the standard deviation under Gaussian data while remaining insensitive to outliers [9]. The result reads naturally: $z = 0$ is the typical (median) change for that variable, $z = +1$ is one robust standard deviation above typical. The output is *not* squashed into $[-1, 1]$: an earlier design applied $\tanh$ here, and its inverse ($\operatorname{arctanh}$) amplified enormously near saturation, blowing up reconstructed forecasts. Boundedness was moved out of the data path and into the dynamics (next section), where it can be guaranteed rather than faked.
+where the constant $1.4826 \approx 1/\Phi^{-1}(3/4)$ makes the MAD a consistent estimate of the standard deviation under Gaussian data while remaining insensitive to outliers [9]. The result reads naturally: $z = 0$ is the typical (median) change for that variable, $z = +1$ is one robust standard deviation above typical. The output is *not* squashed into $[-1, 1]$: an earlier design applied $\tanh$ here, and its inverse ($\mathrm{arctanh}$) amplified enormously near saturation, blowing up reconstructed forecasts. Boundedness was moved out of the data path and into the dynamics (next section), where it can be guaranteed rather than faked.
 
 **Exact inverse.** Forecast increments map back to levels by de-standardizing ($d = z \cdot 1.4826\,\mathrm{MAD} + m$) and then cumulatively summing (`diff`) or exponentiating the cumulative sum (`log_diff`) from the last observed level. Note that the median $m$ is added back at every step, so a forecast of "no further signal" ($z = 0$) reproduces the variable's typical historical drift, not a frozen level.
 

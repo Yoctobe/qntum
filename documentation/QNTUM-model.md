@@ -28,9 +28,9 @@ Each event $E_i$ is defined by:
 $$
 \Phi(E_i, t) =
 \begin{cases}
-0 & t < t_0 \quad \text{(Inactive)} \\[6pt]
-\dfrac{t - t_0}{t_f} & t_0 \le t < t_0 + t_f \quad \text{(Formation)} \\[6pt]
-1 & t_0 + t_f \le t < t_0 + t_f + \tau \quad \text{(Stable)} \\[6pt]
+0 & t < t_0 \quad \text{(Inactive)} \\
+\dfrac{t - t_0}{t_f} & t_0 \le t < t_0 + t_f \quad \text{(Formation)} \\
+1 & t_0 + t_f \le t < t_0 + t_f + \tau \quad \text{(Stable)} \\
 e^{-(t - (t_0 + t_f + \tau))/\tau} & \text{otherwise} \quad \text{(Decay)}
 \end{cases}
 $$
