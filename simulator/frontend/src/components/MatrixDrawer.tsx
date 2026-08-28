@@ -2,11 +2,12 @@ import { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Button, Drawer, InputNumber, Modal, Segmented, Space, Tag, Typography, message } from 'antd';
 import { removeCoupling, setCoupling } from '../api';
-import type { SystemState } from '../types';
+import type { Dataset, SystemState } from '../types';
 
 interface Props {
   open: boolean;
   state: SystemState | null;
+  dataset: Dataset;
   onClose: () => void;
   onStateChange: (state: SystemState) => void;
 }
@@ -20,7 +21,7 @@ interface CellEdit {
   significance?: number;
 }
 
-export default function MatrixDrawer({ open, state, onClose, onStateChange }: Props) {
+export default function MatrixDrawer({ open, state, dataset, onClose, onStateChange }: Props) {
   const [edit, setEdit] = useState<CellEdit | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -161,14 +162,14 @@ export default function MatrixDrawer({ open, state, onClose, onStateChange }: Pr
             <Space style={{ marginTop: 8 }}>
               <Button
                 type="primary" loading={saving}
-                onClick={() => apply(() => setCoupling(edit.target, edit.source, edit.weight, edit.lagDays))}
+                onClick={() => apply(() => setCoupling(edit.target, edit.source, edit.weight, edit.lagDays, dataset))}
               >
                 Pin coupling
               </Button>
               {edit.isManual && (
                 <Button
                   danger loading={saving}
-                  onClick={() => apply(() => removeCoupling(edit.target, edit.source))}
+                  onClick={() => apply(() => removeCoupling(edit.target, edit.source, dataset))}
                 >
                   Remove (let data decide)
                 </Button>

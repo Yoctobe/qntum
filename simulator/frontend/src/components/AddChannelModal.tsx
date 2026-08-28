@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Input, Modal, Radio, Space, Typography, message } from 'antd';
 import { addChannel } from '../api';
+import type { Dataset } from '../types';
 
 interface Props {
   open: boolean;
+  dataset: Dataset;
   onClose: () => void;
   onAdded: () => void;
 }
 
-export default function AddChannelModal({ open, onClose, onAdded }: Props) {
+export default function AddChannelModal({ open, dataset, onClose, onAdded }: Props) {
   const [name, setName] = useState('');
   const [transform, setTransform] = useState('diff');
   const [csv, setCsv] = useState('');
@@ -26,12 +28,12 @@ export default function AddChannelModal({ open, onClose, onAdded }: Props) {
       .filter((r) => r.date && Number.isFinite(r.value));
 
     if (!name || rows.length < 12) {
-      message.error('Need a name and at least 12 monthly rows (date,value)');
+      message.error('Need a name and at least 12 rows (date,value)');
       return;
     }
     setSaving(true);
     try {
-      await addChannel(name, transform, rows as { date: string; value: number }[]);
+      await addChannel(name, transform, rows as { date: string; value: number }[], dataset);
       message.success(`${name} added — couplings auto-fitted, system refit`);
       setName(''); setCsv('');
       onAdded();
@@ -55,7 +57,8 @@ export default function AddChannelModal({ open, onClose, onAdded }: Props) {
     >
       <Space direction="vertical" style={{ width: '100%' }}>
         <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>
-          Paste monthly history as <code>date,value</code> lines. Couplings to
+          Paste history for this dataset as <code>date,value</code> lines
+          (daily or monthly, matching this dataset's cadence). Couplings to
           existing channels are auto-discovered where statistically significant;
           the whole system is refitted on the overlapping date range.
         </Typography.Paragraph>

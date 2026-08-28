@@ -284,21 +284,19 @@ export default function App() {
               style={{ width: 110 }}
             />
           </Tooltip>
-          <Tooltip title={dataset !== 'monthly' ? 'Matrix editing only applies to the live finance panel' : 'Influence matrix'}>
+          <Tooltip title="Influence matrix">
             <Button
               size="small"
               icon={<ApartmentOutlined />}
-              disabled={dataset !== 'monthly'}
               onClick={() => setMatrixOpen(true)}
             >
               {compact ? null : 'Matrix'}
             </Button>
           </Tooltip>
-          <Tooltip title={dataset !== 'monthly' ? 'Adding channels only applies to the live finance panel' : 'Add channel'}>
+          <Tooltip title="Add channel">
             <Button
               size="small"
               icon={<LineChartOutlined />}
-              disabled={dataset !== 'monthly'}
               onClick={() => setChannelOpen(true)}
             >
               {compact ? null : 'Add channel'}
@@ -416,12 +414,14 @@ export default function App() {
       />
       <AddChannelModal
         open={channelOpen}
+        dataset={dataset}
         onClose={() => setChannelOpen(false)}
         onAdded={() => loadState(dataset)}
       />
       <MatrixDrawer
         open={matrixOpen}
         state={state}
+        dataset={dataset}
         onClose={() => setMatrixOpen(false)}
         onStateChange={setState}
       />

@@ -60,23 +60,34 @@ export const addTemplate = (
     body: JSON.stringify({ ...template, dataset }),
   });
 
-export const addChannel = (name: string, transform: string, data: { date: string; value: number }[]) =>
+export const addChannel = (
+  name: string,
+  transform: string,
+  data: { date: string; value: number }[],
+  dataset: Dataset = 'monthly',
+) =>
   request<{ fit: unknown; state: SystemState }>('/api/channels', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, transform, data }),
+    body: JSON.stringify({ name, transform, data, dataset }),
   });
 
-export const setCoupling = (target: string, source: string, weight: number, lagDays: number) =>
+export const setCoupling = (
+  target: string,
+  source: string,
+  weight: number,
+  lagDays: number,
+  dataset: Dataset = 'monthly',
+) =>
   request<SystemState>('/api/matrix', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ target, source, weight, lag_days: lagDays }),
+    body: JSON.stringify({ target, source, weight, lag_days: lagDays, dataset }),
   });
 
-export const removeCoupling = (target: string, source: string) =>
+export const removeCoupling = (target: string, source: string, dataset: Dataset = 'monthly') =>
   request<SystemState>(
-    `/api/matrix?target=${encodeURIComponent(target)}&source=${encodeURIComponent(source)}`,
+    `/api/matrix?target=${encodeURIComponent(target)}&source=${encodeURIComponent(source)}&dataset=${dataset}`,
     { method: 'DELETE' },
   );
 

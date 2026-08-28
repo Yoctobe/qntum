@@ -16,8 +16,9 @@ Thin FastAPI wrapper around the ScenarioEngine.
     DELETE /api/scenarios/{name}
 
 Persistence (survives restarts): event templates (event_library.yaml),
-manual couplings (coupling_overrides.yaml), uploaded channels
-(user_channels/*.csv), saved scenarios (scenarios.json).
+manual couplings (coupling_overrides[_<dataset>].yaml, one store per
+dataset), uploaded channels (user_channels/[<dataset>/]*.csv, monthly
+keeps the flat legacy layout), saved scenarios (scenarios.json).
 
 Three datasets, selectable per request via `dataset` — the model is
 domain-agnostic; only the CSV and a couple of fit knobs change:
@@ -69,9 +70,19 @@ MEDICAL_CSV = DATA_DIR / "medical_glucose_insulin.csv"
 ECOSYSTEM_CSV = DATA_DIR / "ecosystem_predator_prey.csv"
 LIBRARY_YAML = DATA_DIR / "event_library.yaml"
 PRIORS_YAML = DATA_DIR / "coupling_priors.yaml"
-OVERRIDES_YAML = DATA_DIR / "coupling_overrides.yaml"
 SCENARIOS_JSON = DATA_DIR / "scenarios.json"
 USER_CHANNELS_DIR = DATA_DIR / "user_channels"
+
+
+def overrides_yaml(dataset: str) -> Path:
+    # "monthly" keeps the original filename for backward compatibility with
+    # existing installs; other datasets get their own override store so
+    # pinned couplings never leak across domains.
+    return DATA_DIR / ("coupling_overrides.yaml" if dataset == "monthly" else f"coupling_overrides_{dataset}.yaml")
+
+
+def user_channels_dir(dataset: str) -> Path:
+    return USER_CHANNELS_DIR if dataset == "monthly" else USER_CHANNELS_DIR / dataset
 
 TRANSFORM_OVERRIDES = {
     "Industrial_Production": "log_diff",
@@ -97,12 +108,27 @@ def load_relationship_yaml(path: Path) -> list[tuple]:
     ]
 
 
-def save_overrides(relationships: list[tuple]):
+def save_overrides(dataset: str, relationships: list[tuple]):
     entries = [
         {"target": t, "source": s, "weight": w, "lag_days": lag}
         for t, s, w, lag in relationships
     ]
-    OVERRIDES_YAML.write_text(yaml.safe_dump(entries, sort_keys=False))
+    overrides_yaml(dataset).write_text(yaml.safe_dump(entries, sort_keys=False))
+
+
+def restore_user_channels(engine: ScenarioEngine, dataset: str):
+    """Re-attach channels uploaded via /api/channels in earlier sessions."""
+    directory = user_channels_dir(dataset)
+    if not directory.exists():
+        return
+    for csv in sorted(directory.glob("*.csv")):
+        try:
+            s = pd.read_csv(csv, parse_dates=["date"]).set_index("date")["value"]
+            transform = csv.with_suffix(".transform").read_text().strip() \
+                if csv.with_suffix(".transform").exists() else "diff"
+            engine.add_channel(csv.stem, s, transform=transform)
+        except (ValueError, KeyError) as exc:
+            print(f"  ⚠ could not restore channel {csv.stem} ({dataset}): {exc}")
 
 
 def load_scenarios() -> list[dict]:
@@ -126,20 +152,10 @@ def build_monthly_engine() -> ScenarioEngine:
         transform_overrides=dict(TRANSFORM_OVERRIDES),
         dt=30.0,
         fit_levels=fit_levels,
-        manual_relationships=load_relationship_yaml(OVERRIDES_YAML),
+        manual_relationships=load_relationship_yaml(overrides_yaml("monthly")),
         prior_relationships=load_relationship_yaml(PRIORS_YAML),
     )
-
-    # Re-attach channels the user uploaded in earlier sessions
-    if USER_CHANNELS_DIR.exists():
-        for csv in sorted(USER_CHANNELS_DIR.glob("*.csv")):
-            try:
-                s = pd.read_csv(csv, parse_dates=["date"]).set_index("date")["value"]
-                transform = csv.with_suffix(".transform").read_text().strip() \
-                    if csv.with_suffix(".transform").exists() else "diff"
-                engine.add_channel(csv.stem, s, transform=transform)
-            except (ValueError, KeyError) as exc:
-                print(f"  ⚠ could not restore channel {csv.stem}: {exc}")
+    restore_user_channels(engine, "monthly")
     return engine
 
 
@@ -148,7 +164,9 @@ def build_medical_engine() -> Optional[ScenarioEngine]:
     if not MEDICAL_CSV.exists():
         return None
     df = pd.read_csv(MEDICAL_CSV, parse_dates=["Date"]).set_index("Date")
-    return ScenarioEngine(df, dt=1.0)
+    engine = ScenarioEngine(df, dt=1.0, manual_relationships=load_relationship_yaml(overrides_yaml("medical")))
+    restore_user_channels(engine, "medical")
+    return engine
 
 
 def build_ecosystem_engine() -> Optional[ScenarioEngine]:
@@ -156,7 +174,9 @@ def build_ecosystem_engine() -> Optional[ScenarioEngine]:
     if not ECOSYSTEM_CSV.exists():
         return None
     df = pd.read_csv(ECOSYSTEM_CSV, parse_dates=["Date"]).set_index("Date")
-    return ScenarioEngine(df, dt=30.0)
+    engine = ScenarioEngine(df, dt=30.0, manual_relationships=load_relationship_yaml(overrides_yaml("ecosystem")))
+    restore_user_channels(engine, "ecosystem")
+    return engine
 
 
 ENGINES: dict[str, ScenarioEngine] = {"monthly": build_monthly_engine()}
@@ -168,7 +188,6 @@ for _key, _builder in (
     if _eng is not None:
         ENGINES[_key] = _eng
 DATASET_CHOICES = tuple(ENGINES.keys())
-engine = ENGINES["monthly"]  # default, used by legacy call sites below
 library = EventLibrary(LIBRARY_YAML)
 
 
@@ -232,6 +251,7 @@ class ChannelUpload(BaseModel):
     name: str
     transform: str = "diff"
     data: list[dict]  # [{date, value}]
+    dataset: str = "monthly"
 
 
 class CouplingModel(BaseModel):
@@ -239,6 +259,7 @@ class CouplingModel(BaseModel):
     source: str
     weight: float
     lag_days: float = 0.0
+    dataset: str = "monthly"
 
 
 class ScenarioModel(BaseModel):
@@ -391,40 +412,47 @@ def simulate(req: SimRequest):
 
 @app.post("/api/channels")
 def add_channel(upload: ChannelUpload):
+    eng = get_engine(upload.dataset)
     try:
         df = pd.DataFrame(upload.data)
         series = pd.Series(
             df["value"].astype(float).values,
             index=pd.to_datetime(df["date"]),
         ).sort_index()
-        # Align to month starts to match the master timeline
-        series.index = series.index.to_period("M").to_timestamp()
+        if eng.dt >= 20:
+            # Align to month starts to match a monthly/quarterly master timeline
+            series.index = series.index.to_period("M").to_timestamp()
+        else:
+            series.index = series.index.normalize()
         series = series[~series.index.duplicated(keep="last")]
-        result = engine.add_channel(upload.name, series, transform=upload.transform)
+        result = eng.add_channel(upload.name, series, transform=upload.transform)
     except (ValueError, KeyError) as exc:
         raise HTTPException(400, str(exc))
 
-    USER_CHANNELS_DIR.mkdir(exist_ok=True)
-    series.rename("value").rename_axis("date").to_csv(USER_CHANNELS_DIR / f"{upload.name}.csv")
-    (USER_CHANNELS_DIR / f"{upload.name}.transform").write_text(upload.transform)
-    return {"fit": result, "state": state_json(engine)}
+    directory = user_channels_dir(upload.dataset)
+    directory.mkdir(parents=True, exist_ok=True)
+    series.rename("value").rename_axis("date").to_csv(directory / f"{upload.name}.csv")
+    (directory / f"{upload.name}.transform").write_text(upload.transform)
+    return {"fit": result, "state": state_json(eng)}
 
 
 @app.post("/api/matrix")
 def set_coupling(c: CouplingModel):
+    eng = get_engine(c.dataset)
     try:
-        engine.set_coupling(c.target, c.source, c.weight, c.lag_days)
+        eng.set_coupling(c.target, c.source, c.weight, c.lag_days)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    save_overrides(engine.manual_relationships)
-    return state_json(engine)
+    save_overrides(c.dataset, eng.manual_relationships)
+    return state_json(eng)
 
 
 @app.delete("/api/matrix")
-def remove_coupling(target: str, source: str):
-    engine.remove_coupling(target, source)
-    save_overrides(engine.manual_relationships)
-    return state_json(engine)
+def remove_coupling(target: str, source: str, dataset: str = "monthly"):
+    eng = get_engine(dataset)
+    eng.remove_coupling(target, source)
+    save_overrides(dataset, eng.manual_relationships)
+    return state_json(eng)
 
 
 @app.get("/api/scenarios")
