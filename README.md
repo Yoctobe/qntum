@@ -4,7 +4,7 @@
 
 A multivariate forecasting model that evolves **magnitudes** over time from an influence matrix and initial conditions. Couplings are named and editable; inactive factors contribute nothing; forecasts stay bounded.
 
-![QNTUM Simulator](home.png)
+![QNTUM Simulator — Finance](finance.png)
 
 ---
 
@@ -88,6 +88,9 @@ Interactive UI (`simulator/`) on top of the model:
 | Finance | US macro panel, monthly, 2006→present | Well-conditioned fit; v1 ≈ v2 |
 | Medical | Synthetic glucose/insulin (Bergman-style constants) | Auto-discovery alone recovers real physiology — insulin lowers glucose, glucose drives secretion |
 | Ecosystem | Synthetic predator/prey (Lotka–Volterra, monthly) | Same engine, an ecological domain — predators suppress prey growth |
+
+![QNTUM Simulator — Medical](medical.png)
+![QNTUM Simulator — Ecosystem](ecosystem.png)
 
 ### Run
 
