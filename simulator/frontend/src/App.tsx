@@ -259,24 +259,26 @@ export default function App() {
         </Tooltip>
 
         <div className="qntum-header-actions">
-          <Tooltip title="Forecast horizon">
+          <Tooltip title="Forecast horizon (months ahead)">
             <InputNumber
               size="small"
               min={6} max={60} value={horizon}
               onChange={(v) => v != null && setHorizon(v)}
-              addonBefore={compact ? undefined : 'H'}
+              addonBefore="H"
               addonAfter="mo"
-              style={{ width: compact ? 88 : 100 }}
+              controls={false}
+              style={{ width: 118 }}
             />
           </Tooltip>
-          <Tooltip title="Months of lead before pins (markets front-running announced policy)">
+          <Tooltip title="Anticipation: months of lead before pins (markets front-running announced policy)">
             <InputNumber
               size="small"
               min={0} max={12} value={anticipation}
               onChange={(v) => v != null && setAnticipation(v)}
-              addonBefore={compact ? undefined : 'A'}
+              addonBefore="A"
               addonAfter="mo"
-              style={{ width: compact ? 88 : 100 }}
+              controls={false}
+              style={{ width: 110 }}
             />
           </Tooltip>
           <Tooltip title={dataset !== 'monthly' ? 'Matrix editing only applies to the live panel' : 'Influence matrix'}>

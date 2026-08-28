@@ -80,9 +80,9 @@ export default function ScenarioPanel({
           items={events.map((e) => ({
             key: e.id,
             label: (
-              <Space>
-                <Tag color="volcano">{e.date.slice(0, 7)}</Tag>
-                {e.name}
+              <Space size={4} wrap style={{ maxWidth: '100%' }}>
+                <Tag color="volcano" style={{ margin: 0 }}>{e.date.slice(0, 7)}</Tag>
+                <Typography.Text ellipsis style={{ maxWidth: 160 }}>{e.name}</Typography.Text>
               </Space>
             ),
             extra: (
@@ -92,25 +92,34 @@ export default function ScenarioPanel({
               />
             ),
             children: (
-              <Space direction="vertical" style={{ width: '100%' }} size={2}>
+              <Space direction="vertical" style={{ width: '100%' }} size={4}>
                 <Typography.Text type="secondary">Intensity: {e.intensity.toFixed(2)}</Typography.Text>
                 <Slider
                   min={0.05} max={1.5} step={0.05} value={e.intensity}
                   onChange={(v) => onUpdateEvent(e.id, { intensity: v })}
                 />
-                <Space>
-                  <span>Formation</span>
-                  <InputNumber
-                    size="small" min={1} max={24} value={e.formation}
-                    onChange={(v) => v != null && onUpdateEvent(e.id, { formation: v })}
-                  />
-                  <span>τ decay</span>
-                  <InputNumber
-                    size="small" min={1} max={36} value={e.tau}
-                    onChange={(v) => v != null && onUpdateEvent(e.id, { tau: v })}
-                  />
-                  <span>months</span>
-                </Space>
+                <div className="qntum-event-params">
+                  <label>
+                    <span>Formation</span>
+                    <InputNumber
+                      size="small" min={1} max={24} value={e.formation}
+                      onChange={(v) => v != null && onUpdateEvent(e.id, { formation: v })}
+                      addonAfter="mo"
+                      controls={false}
+                      style={{ width: 96 }}
+                    />
+                  </label>
+                  <label>
+                    <span>τ decay</span>
+                    <InputNumber
+                      size="small" min={1} max={36} value={e.tau}
+                      onChange={(v) => v != null && onUpdateEvent(e.id, { tau: v })}
+                      addonAfter="mo"
+                      controls={false}
+                      style={{ width: 96 }}
+                    />
+                  </label>
+                </div>
               </Space>
             ),
           }))}
