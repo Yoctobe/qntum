@@ -81,7 +81,14 @@ Interactive UI (`simulator/`) on top of the model:
 - **Pin** any chart point — other channels react through $I$  
 - **Event library** — shocks with formation / intensity / decay  
 - Editable influence matrix heatmap  
-- Live US macro panel + stress-test reproduction of the paper's short-sample case  
+- Four example domains, same engine, switchable in the header tabs:
+
+| Dataset | Domain | What it shows |
+|---------|--------|---------------|
+| Finance (live) | US macro panel, monthly, 2006→present | Well-conditioned fit; v1 ≈ v2 |
+| Finance (stress) | `QUNTUM_draft.md` §4.2 reproduction, 16 quarters | Genuinely unstable fit; v1 and v2 diverge for real |
+| Medical | Synthetic glucose/insulin (Bergman-style constants) | Auto-discovery alone recovers real physiology — insulin lowers glucose, glucose drives secretion |
+| Ecosystem | Synthetic predator/prey (Lotka–Volterra, monthly) | Same engine, an ecological domain — predators suppress prey growth |
 
 ### Run
 
@@ -97,7 +104,8 @@ npm install
 npm run dev   # → http://localhost:5173
 ```
 
-Refresh macro data: `python3 simulator/backend/fetch_data.py`
+Refresh macro data: `python3 simulator/backend/fetch_data.py`  
+Regenerate medical/ecosystem synthetic panels: `python3 Model/generate_example_domains.py`
 
 ---
 

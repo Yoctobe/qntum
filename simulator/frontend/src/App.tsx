@@ -19,6 +19,13 @@ import './App.css';
 
 const HORIZON_DEFAULT = 24;
 
+const DATASET_TOOLTIPS: Record<Dataset, string> = {
+  monthly: 'Well-conditioned live US macro panel — the spectral cap stays idle, v1 ≈ v2',
+  quarterly_stress: 'QUNTUM_draft.md §4.2 reproduction: 16 quarters, α=0.85, β=0.50 — the fit genuinely exceeds the cap, so v1 and v2 diverge for real',
+  medical: 'Synthetic glucose/insulin regulation (Bergman-style constants) — same engine, a physiological domain: insulin lowers glucose, glucose drives secretion',
+  ecosystem: 'Synthetic predator/prey population (Lotka–Volterra, monthly) — same engine, an ecological domain: predators suppress prey growth',
+};
+
 interface PinEdit {
   channel: string;
   date: string;
@@ -240,19 +247,17 @@ export default function App() {
           </div>
         </Tooltip>
 
-        <Tooltip title={
-          dataset === 'monthly'
-            ? 'Well-conditioned live panel — the spectral cap stays idle, v1 ≈ v2'
-            : 'QUNTUM_draft.md §4.2 reproduction: 16 quarters, α=0.85, β=0.50 — the fit genuinely exceeds the cap, so v1 and v2 diverge for real'
-        }>
+        <Tooltip title={DATASET_TOOLTIPS[dataset]}>
           <div className="qntum-header-tabs">
             <Tabs
               activeKey={dataset}
               onChange={(k) => setDataset(k as Dataset)}
               size="small"
               items={[
-                { key: 'monthly', label: compact ? 'Live' : 'Live panel' },
-                { key: 'quarterly_stress', label: compact ? 'Stress' : 'Stress (§4.2)' },
+                { key: 'monthly', label: compact ? 'Live' : 'Finance (live)' },
+                { key: 'quarterly_stress', label: compact ? 'Stress' : 'Finance (stress)' },
+                { key: 'medical', label: compact ? 'Med' : 'Medical' },
+                { key: 'ecosystem', label: compact ? 'Eco' : 'Ecosystem' },
               ]}
             />
           </div>
@@ -281,7 +286,7 @@ export default function App() {
               style={{ width: 110 }}
             />
           </Tooltip>
-          <Tooltip title={dataset !== 'monthly' ? 'Matrix editing only applies to the live panel' : 'Influence matrix'}>
+          <Tooltip title={dataset !== 'monthly' ? 'Matrix editing only applies to the live finance panel' : 'Influence matrix'}>
             <Button
               size="small"
               icon={<ApartmentOutlined />}
@@ -291,7 +296,7 @@ export default function App() {
               {compact ? null : 'Matrix'}
             </Button>
           </Tooltip>
-          <Tooltip title={dataset !== 'monthly' ? 'Adding channels only applies to the live panel' : 'Add channel'}>
+          <Tooltip title={dataset !== 'monthly' ? 'Adding channels only applies to the live finance panel' : 'Add channel'}>
             <Button
               size="small"
               icon={<LineChartOutlined />}

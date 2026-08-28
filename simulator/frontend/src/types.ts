@@ -29,7 +29,7 @@ export interface SystemState {
 }
 
 export type ModelVersion = 'v1' | 'v2';
-export type Dataset = 'monthly' | 'quarterly_stress';
+export type Dataset = 'monthly' | 'quarterly_stress' | 'medical' | 'ecosystem';
 
 export interface EventTemplate {
   name: string;

@@ -19,7 +19,8 @@ Persistence (survives restarts): event templates (event_library.yaml),
 manual couplings (coupling_overrides.yaml), uploaded channels
 (user_channels/*.csv), saved scenarios (scenarios.json).
 
-Two datasets, selectable per request via `dataset`:
+Four datasets, selectable per request via `dataset` — the model is
+domain-agnostic; only the CSV and a couple of fit knobs change:
     "monthly"          — the live panel (us_macro_monthly_full.csv, 2006→
                           present). Fits couplings on the long panel (per-pair
                           overlaps back to 1971 where available), simulates
@@ -37,6 +38,17 @@ Two datasets, selectable per request via `dataset`:
                           exceeds the spectral cap here (ρ≈1.3-1.4 pre-cap),
                           so v1 (per-step clamp) and v2 (one-time β shrink)
                           diverge for a real reason, not a cosmetic one.
+    "medical"           — synthetic glucose/insulin panel (daily-timescale
+                          analogue of the Bergman minimal model: glucose G,
+                          plasma insulin I, insulin action X). Auto-discovery
+                          alone recovers the textbook physiology: insulin
+                          lowers glucose, glucose drives secretion, insulin
+                          drives its own delayed action.
+    "ecosystem"         — synthetic predator/prey panel (Lotka–Volterra,
+                          monthly, RK4-integrated). Recovers the classic
+                          asymmetric coupling: predators suppress prey growth
+                          more visibly than prey population feeds predator
+                          growth, at the model's fitted lag.
 
 Run: uvicorn app:app --reload --port 8000
 """
@@ -62,6 +74,8 @@ DATA_DIR = Path(__file__).parent / "data"
 MACRO_CSV = DATA_DIR / "us_macro_monthly.csv"
 MACRO_FULL_CSV = DATA_DIR / "us_macro_monthly_full.csv"
 STRESS_CSV = DATA_DIR / "us_macro_quarterly_stress.csv"
+MEDICAL_CSV = DATA_DIR / "medical_glucose_insulin.csv"
+ECOSYSTEM_CSV = DATA_DIR / "ecosystem_predator_prey.csv"
 LIBRARY_YAML = DATA_DIR / "event_library.yaml"
 PRIORS_YAML = DATA_DIR / "coupling_priors.yaml"
 OVERRIDES_YAML = DATA_DIR / "coupling_overrides.yaml"
@@ -162,10 +176,31 @@ def build_stress_engine() -> Optional[ScenarioEngine]:
     )
 
 
+def build_medical_engine() -> Optional[ScenarioEngine]:
+    """Synthetic glucose/insulin panel — see generate_example_domains.py."""
+    if not MEDICAL_CSV.exists():
+        return None
+    df = pd.read_csv(MEDICAL_CSV, parse_dates=["Date"]).set_index("Date")
+    return ScenarioEngine(df, dt=1.0)
+
+
+def build_ecosystem_engine() -> Optional[ScenarioEngine]:
+    """Synthetic predator/prey panel — see generate_example_domains.py."""
+    if not ECOSYSTEM_CSV.exists():
+        return None
+    df = pd.read_csv(ECOSYSTEM_CSV, parse_dates=["Date"]).set_index("Date")
+    return ScenarioEngine(df, dt=30.0)
+
+
 ENGINES: dict[str, ScenarioEngine] = {"monthly": build_monthly_engine()}
-_stress = build_stress_engine()
-if _stress is not None:
-    ENGINES["quarterly_stress"] = _stress
+for _key, _builder in (
+    ("quarterly_stress", build_stress_engine),
+    ("medical", build_medical_engine),
+    ("ecosystem", build_ecosystem_engine),
+):
+    _eng = _builder()
+    if _eng is not None:
+        ENGINES[_key] = _eng
 DATASET_CHOICES = tuple(ENGINES.keys())
 engine = ENGINES["monthly"]  # default, used by legacy call sites below
 library = EventLibrary(LIBRARY_YAML)
@@ -213,7 +248,7 @@ class SimRequest(BaseModel):
     anticipation: int = 0
     replay_from: Optional[str] = None  # date; re-simulate from here to check vs actual
     dynamics: str = "v2"  # "v1" (documentation/QNTUM-model.md) or "v2" (spectral cap)
-    dataset: str = "monthly"  # "monthly" (live panel) or "quarterly_stress" (paper §4.2)
+    dataset: str = "monthly"  # "monthly" | "quarterly_stress" | "medical" | "ecosystem"
 
 
 class TemplateModel(BaseModel):
@@ -350,6 +385,8 @@ def get_datasets():
         "descriptions": {
             "monthly": "Live US macro panel (monthly, 2006-present) — well-conditioned; v2's spectral cap stays idle.",
             "quarterly_stress": "QUNTUM_draft.md §4.2 reproduction (16 quarters, α=0.85, β=0.50) — genuinely unstable fit; v1 and v2 diverge for real.",
+            "medical": "Synthetic glucose/insulin regulation (daily, Bergman-style constants) — the model recovers real physiology from data alone.",
+            "ecosystem": "Synthetic predator/prey population (monthly, Lotka–Volterra) — same engine, an entirely different domain.",
         },
     }
 
