@@ -91,6 +91,8 @@ Interactive UI (`simulator/`) on top of the model:
 
 ![QNTUM Simulator — Medical](medical.png)
 ![QNTUM Simulator — Ecosystem](ecosystem.png)
+![QNTUM Simulator — Influence matrix](imatrix.png)
+![QNTUM Simulator — Add channel](addchannel.png)
 
 ### Run
 

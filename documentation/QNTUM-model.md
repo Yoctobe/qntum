@@ -113,4 +113,5 @@ then scale if $\max_i |M_i(t+1)| > 1$ and clamp to $[-1, 1]$.
 **Linear dynamics:** $M(t+1) = B + \alpha\, M(t) + \beta\,\Phi\, (I\,M(t))$ (no normalisation, no clamp). With $\alpha=0$, $\beta=1$, $\Phi=1$: $M(t+1) = B + I\,M(t)$.
 
 - **Memory:** $\alpha\, M_i(t)$
-- **Network influence:** $\beta\, \Phi\, \sum_j I_{ij}\, \tilde{M}_j(t)$ (default) or $\beta\, \Phi\, \sum_j I_{ij}\, M_j(t)$ (linear)
+- **Network influence (default):** $\beta\, \Phi\, \sum_j I_{ij}\, \tilde{M}_j(t)$
+- **Network influence (linear):** $\beta\, \Phi\, \sum_j I_{ij}\, M_j(t)$
