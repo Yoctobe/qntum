@@ -27,7 +27,7 @@ Third, *boundedness*. A multi-step forecast produced by iterating a fitted one-s
 
 QNTUM is built to satisfy all three at once, at the deliberate cost of expressive power: it is a small, sparse, mostly-linear model, and I will be explicit in Section 4 about the scale of data below which even that modest structure cannot be identified.
 
-### 1.2. What QNTUM is, in one paragraph
+### 1.2. What QNTUM is
 
 QNTUM (QUAntified Network of Temporal Unfolding Magnitudes — unrelated to quantum mechanics) evolves a scalar *magnitude* per variable in discrete time. Magnitudes influence each other through a sparse relationship store: pairwise entries ($j$ influences $i$ with weight $w$ at lag $\ell$), plus optional higher-order entries where two or three sources jointly influence a target through a product term or a user-supplied formula. Each variable is wrapped in an *event* with an explicit life cycle — inactive, then a linear formation ramp, then stable, then exponential decay — so regime changes are modelled directly rather than absorbed into coefficients. Data enters as robustly standardized increments and leaves as levels via an exact inverse transform. Iterated forecasts are kept bounded by construction: the global influence gain is shrunk until the spectral radius of the linearized transition matrix falls below a declared cap.
 
