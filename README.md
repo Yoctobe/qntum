@@ -12,12 +12,12 @@ A multivariate forecasting model that evolves **magnitudes** over time from an i
 
 Two inputs drive the simulation:
 
-1. **Influence matrix** \(I\) — how each variable / event affects every other  
-2. **Initial magnitudes** at \(t_0\)
+1. **Influence matrix** $I$ — how each variable / event affects every other  
+2. **Initial magnitudes** at $t_0$
 
 Levels go in raw (prices, rates, GDP, temperatures). Internally the model converts each series to a stationary increment (diff or log-diff), then a robust z-score (median / MAD). You do not pre-normalize.
 
-An **inactive** event has magnitude \(0\). Active magnitudes update as memory of their own past plus a phase-gated network sum:
+An **inactive** event has magnitude $0$. Active magnitudes update as memory of their own past plus a phase-gated network sum:
 
 $$
 M_i(t+1) = B_i + \alpha\, M_i(t) + \beta\, \Phi(E_i, t)\, \sum_{j} I_{ij}\, \tilde{M}_j(t)
@@ -33,9 +33,9 @@ Full theory: [`documentation/QNTUM-model.md`](documentation/QNTUM-model.md).
 
 ---
 
-## Events and phase \(\Phi\)
+## Events and phase $\Phi$
 
-Each factor is wrapped in an event \(E_i\) with start \(t_0\), formation \(t_f\), and decay \(\tau\):
+Each factor is wrapped in an event $E_i$ with start $t_0$, formation $t_f$, and decay $\tau$:
 
 **Inactive → Formation → Stable → Decay**
 
@@ -49,7 +49,7 @@ e^{-(t - (t_0 + t_f + \tau))/\tau} & \text{decay}
 \end{cases}
 $$
 
-When \(\Phi = 0\), the event does not participate in the network term.
+When $\Phi = 0$, the event does not participate in the network term.
 
 ---
 
@@ -57,8 +57,8 @@ When \(\Phi = 0\), the event does not participate in the network term.
 
 | Mode | Behavior |
 |------|----------|
-| **v1 — bounded (doc)** | Scale history by \(\max\|M\|\), then clamp after each step (original design) |
-| **v2 — spectral (default)** | No per-step clamp; shrink global gain \(\beta\) so \(\rho(\alpha I + \beta W) < 1\) |
+| **v1 — bounded (doc)** | Scale history by $\max\|M\|$, then clamp after each step (original design) |
+| **v2 — spectral (default)** | No per-step clamp; shrink global gain $\beta$ so $\rho(\alpha I + \beta W) < 1$ |
 
 Both share the same fitted influence store. Compare them in the simulator tabs; they diverge when the fitted structure is genuinely unstable (Stress panel, §4.2).
 
@@ -66,7 +66,7 @@ Both share the same fitted influence store. Compare them in the simulator tabs; 
 
 ## Influence matrix
 
-- Square store: \(I_{ij}\) = effect of \(j\) on \(i\)
+- Square store: $I_{ij}$ = effect of $j$ on $i$
 - **Pin** known linear (scalar) or nonlinear (formula) relationships; they are never overwritten by fitting
 - Leave the rest for auto-discovery above a significance threshold
 - Expandable when new channels / events are added
@@ -78,10 +78,10 @@ Both share the same fitted influence store. Compare them in the simulator tabs; 
 Interactive UI (`simulator/`) on top of the model:
 
 - Timeline cursor over past → present → future  
-- **Pin** any chart point — other channels react through \(I\)  
+- **Pin** any chart point — other channels react through $I$  
 - **Event library** — shocks with formation / intensity / decay  
 - Editable influence matrix heatmap  
-- Live US macro panel + stress-test reproduction of the paper’s short-sample case  
+- Live US macro panel + stress-test reproduction of the paper's short-sample case  
 
 ### Run
 
