@@ -4,10 +4,12 @@ import {
 } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { addTemplate } from '../api';
+import type { Dataset } from '../types';
 
 interface Props {
   open: boolean;
   channelNames: string[];
+  dataset: Dataset;
   onClose: () => void;
   onCreated: () => void;
 }
@@ -17,7 +19,7 @@ interface HopRow {
   weight?: number;
 }
 
-export default function NewEventWizard({ open, channelNames, onClose, onCreated }: Props) {
+export default function NewEventWizard({ open, channelNames, dataset, onClose, onCreated }: Props) {
   const [form] = Form.useForm();
   const [hops, setHops] = useState<HopRow[]>([{}]);
   const [saving, setSaving] = useState(false);
@@ -40,7 +42,7 @@ export default function NewEventWizard({ open, channelNames, onClose, onCreated 
         formation: values.formation,
         tau: values.tau,
         first_hop: firstHop,
-      });
+      }, dataset);
       message.success(`Template "${values.name}" saved to library`);
       form.resetFields();
       setHops([{}]);

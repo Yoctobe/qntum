@@ -259,6 +259,7 @@ class TemplateModel(BaseModel):
     first_hop: dict[str, float]
     ranges: dict[str, list[float]] = Field(default_factory=dict)
     analogues: list[str] = Field(default_factory=list)
+    dataset: str = "monthly"
 
 
 class ChannelUpload(BaseModel):
@@ -299,7 +300,8 @@ def date_to_idx(eng: ScenarioEngine, date: str, horizon: int) -> int:
     return idx
 
 
-def library_json() -> list[dict]:
+def library_json(dataset: Optional[str] = None) -> list[dict]:
+    channel_names = set(get_engine(dataset).channel_names) if dataset else None
     return [
         {
             "name": t.name,
@@ -311,6 +313,7 @@ def library_json() -> list[dict]:
             "analogues": t.analogues,
         }
         for t in library.templates.values()
+        if channel_names is None or set(t.first_hop).issubset(channel_names)
     ]
 
 
@@ -397,17 +400,20 @@ def get_state(dataset: str = "monthly"):
 
 
 @app.get("/api/library")
-def get_library():
-    return library_json()
+def get_library(dataset: str = "monthly"):
+    return library_json(dataset)
 
 
 @app.post("/api/library")
 def add_template(t: TemplateModel):
-    unknown = [c for c in t.first_hop if c not in engine.channel_names]
+    eng = get_engine(t.dataset)
+    unknown = [c for c in t.first_hop if c not in eng.channel_names]
     if unknown:
         raise HTTPException(400, f"Unknown channels in first_hop: {unknown}")
-    library.add(EventTemplate(**t.model_dump()))
-    return library_json()
+    fields = t.model_dump()
+    fields.pop("dataset")
+    library.add(EventTemplate(**fields))
+    return library_json(t.dataset)
 
 
 @app.post("/api/simulate")

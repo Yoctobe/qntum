@@ -15,7 +15,8 @@ export const fetchState = (dataset: Dataset = 'monthly') =>
 export const fetchDatasets = () =>
   request<{ choices: Dataset[]; descriptions: Record<Dataset, string> }>('/api/datasets');
 
-export const fetchLibrary = () => request<EventTemplate[]>('/api/library');
+export const fetchLibrary = (dataset: Dataset = 'monthly') =>
+  request<EventTemplate[]>(`/api/library?dataset=${dataset}`);
 
 export const simulate = (
   pins: Pin[],
@@ -49,11 +50,14 @@ export const simulate = (
     }),
   });
 
-export const addTemplate = (template: Omit<EventTemplate, 'ranges' | 'analogues'>) =>
+export const addTemplate = (
+  template: Omit<EventTemplate, 'ranges' | 'analogues'>,
+  dataset: Dataset = 'monthly',
+) =>
   request<EventTemplate[]>('/api/library', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(template),
+    body: JSON.stringify({ ...template, dataset }),
   });
 
 export const addChannel = (name: string, transform: string, data: { date: string; value: number }[]) =>

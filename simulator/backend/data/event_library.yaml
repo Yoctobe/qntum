@@ -124,3 +124,102 @@
   analogues:
     - CARES Act + ARP 2020-21
     - ARRA 2009
+
+# ── Medical (Glucose_mgdl, Plasma_Insulin_uUmL, Insulin_Action) ─────────────
+
+- name: Large Meal / Carb Load
+  description: >
+    A heavy, high-glycemic meal (e.g. large pasta or dessert portion) beyond
+    the model's usual daily intake pattern. Intensity 1.0 ≈ a holiday-scale
+    binge; 0.3 ≈ an ordinary indulgent dinner. Direct effect is on glucose
+    only — the insulin response propagates through the fitted matrix.
+  formation: 1
+  tau: 2
+  first_hop:
+    Glucose_mgdl: 6.0
+  ranges:
+    Glucose_mgdl: [2.0, 10.0]
+  analogues:
+    - Holiday/feast day
+    - Sustained high-carb diet phase
+
+- name: Acute Illness / Stress Response
+  description: >
+    Infection or physical stress triggers cortisol/adrenaline release, which
+    raises glucose directly and blunts insulin's effect on uptake
+    (stress-induced insulin resistance). Intensity 1.0 ≈ a feverish illness
+    lasting days; 0.3 ≈ mild stress (poor sleep, minor illness).
+  formation: 1
+  tau: 5
+  first_hop:
+    Glucose_mgdl: 4.0
+    Insulin_Action: -3.0
+  ranges:
+    Glucose_mgdl: [1.5, 7.0]
+    Insulin_Action: [-5.0, -1.0]
+  analogues:
+    - Febrile infection
+    - Acute physical/emotional stress
+
+- name: Exercise Bout
+  description: >
+    Physical activity increases insulin sensitivity (muscles take up glucose
+    independent of insulin) and lowers glucose directly during and shortly
+    after exertion. Intensity 1.0 ≈ a sustained cardio session.
+  formation: 1
+  tau: 3
+  first_hop:
+    Glucose_mgdl: -3.0
+    Insulin_Action: 2.0
+  ranges:
+    Glucose_mgdl: [-6.0, -1.0]
+    Insulin_Action: [0.5, 4.0]
+  analogues:
+    - Cardio session
+    - New exercise regimen (sustained)
+
+# ── Ecosystem (Prey_Population, Predator_Population) ────────────────────────
+
+- name: Disease Outbreak (Prey)
+  description: >
+    An epizootic directly reduces the prey population, independent of
+    predation pressure. Intensity 1.0 ≈ a severe die-off (e.g. myxomatosis
+    in rabbits); 0.3 ≈ a mild, contained outbreak.
+  formation: 1
+  tau: 4
+  first_hop:
+    Prey_Population: -6.0
+  ranges:
+    Prey_Population: [-10.0, -2.0]
+  analogues:
+    - Myxomatosis-style epizootic
+    - Localized habitat disease event
+
+- name: Habitat Loss (Prey)
+  description: >
+    Sustained reduction in prey carrying capacity (deforestation, drought,
+    land conversion) — a persistent negative pressure on the prey population
+    directly, distinct from predation.
+  formation: 3
+  tau: 12
+  first_hop:
+    Prey_Population: -4.0
+  ranges:
+    Prey_Population: [-8.0, -1.5]
+  analogues:
+    - Drought-driven habitat loss
+    - Land conversion / deforestation
+
+- name: Culling Program (Predator)
+  description: >
+    Direct human intervention (hunting quota, culling program) reduces the
+    predator population independent of prey availability.
+  formation: 1
+  tau: 6
+  first_hop:
+    Predator_Population: -5.0
+  ranges:
+    Predator_Population: [-9.0, -1.5]
+  analogues:
+    - Managed hunting quota increase
+    - Predator control program

@@ -56,7 +56,7 @@ export default function App() {
   const debounceRef = useRef<number>();
 
   const loadState = useCallback(async (ds: Dataset) => {
-    const [s, lib, sc] = await Promise.all([fetchState(ds), fetchLibrary(), fetchScenarios()]);
+    const [s, lib, sc] = await Promise.all([fetchState(ds), fetchLibrary(ds), fetchScenarios()]);
     setState(s);
     setLibrary(lib);
     setScenarios(sc);
@@ -412,8 +412,9 @@ export default function App() {
       <NewEventWizard
         open={wizardOpen}
         channelNames={state?.channels.map((c) => c.name) ?? []}
+        dataset={dataset}
         onClose={() => setWizardOpen(false)}
-        onCreated={() => fetchLibrary().then(setLibrary)}
+        onCreated={() => fetchLibrary(dataset).then(setLibrary)}
       />
       <AddChannelModal
         open={channelOpen}
