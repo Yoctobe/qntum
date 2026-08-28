@@ -81,12 +81,11 @@ Interactive UI (`simulator/`) on top of the model:
 - **Pin** any chart point — other channels react through $I$  
 - **Event library** — shocks with formation / intensity / decay  
 - Editable influence matrix heatmap  
-- Four example domains, same engine, switchable in the header tabs:
+- Three example domains, same engine, switchable in the header tabs:
 
 | Dataset | Domain | What it shows |
 |---------|--------|---------------|
-| Finance (live) | US macro panel, monthly, 2006→present | Well-conditioned fit; v1 ≈ v2 |
-| Finance (stress) | `QUNTUM_draft.md` §4.2 reproduction, 16 quarters | Genuinely unstable fit; v1 and v2 diverge for real |
+| Finance | US macro panel, monthly, 2006→present | Well-conditioned fit; v1 ≈ v2 |
 | Medical | Synthetic glucose/insulin (Bergman-style constants) | Auto-discovery alone recovers real physiology — insulin lowers glucose, glucose drives secretion |
 | Ecosystem | Synthetic predator/prey (Lotka–Volterra, monthly) | Same engine, an ecological domain — predators suppress prey growth |
 

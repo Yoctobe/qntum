@@ -21,7 +21,6 @@ const HORIZON_DEFAULT = 24;
 
 const DATASET_TOOLTIPS: Record<Dataset, string> = {
   monthly: 'Well-conditioned live US macro panel — the spectral cap stays idle, v1 ≈ v2',
-  quarterly_stress: 'QUNTUM_draft.md §4.2 reproduction: 16 quarters, α=0.85, β=0.50 — the fit genuinely exceeds the cap, so v1 and v2 diverge for real',
   medical: 'Synthetic glucose/insulin regulation (Bergman-style constants) — same engine, a physiological domain: insulin lowers glucose, glucose drives secretion',
   ecosystem: 'Synthetic predator/prey population (Lotka–Volterra, monthly) — same engine, an ecological domain: predators suppress prey growth',
 };
@@ -254,8 +253,7 @@ export default function App() {
               onChange={(k) => setDataset(k as Dataset)}
               size="small"
               items={[
-                { key: 'monthly', label: compact ? 'Live' : 'Finance (live)' },
-                { key: 'quarterly_stress', label: compact ? 'Stress' : 'Finance (stress)' },
+                { key: 'monthly', label: compact ? 'Fin' : 'Finance' },
                 { key: 'medical', label: compact ? 'Med' : 'Medical' },
                 { key: 'ecosystem', label: compact ? 'Eco' : 'Ecosystem' },
               ]}
