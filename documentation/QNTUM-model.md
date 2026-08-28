@@ -5,7 +5,7 @@ This model simulates **magnitudes** at future time points from two inputs:
 - **Influence matrix** $I$, defined at fixed magnitude 1
 - **Initial magnitudes** at $t_0$
 
-**Data requirement:** Use **level values** for your time series (e.g. raw temperature, volume, prices, GDP levels). Do not use normalized data (z-scores, min-max scaled) as if they were levels — the model expects level inputs; normalization or differencing is applied internally when needed.
+**Data requirement:** Use **level values** for your time series (e.g. raw temperature, volume, prices, GDP levels). Do not pre-normalize — the normalization layer is applied internally: each variable is converted to a stationary increment (first difference by default; log-difference for strictly positive multiplicative series such as prices), then standardized by a robust z-score (median / MAD). Forecast stability is guaranteed by capping the spectral radius of the linearized dynamics $\rho(\alpha\,\mathbb{1} + \beta W) < 1$, not by clamping the data.
 
 An event that is **inactive** has magnitude $0$. The magnitude of event $i$ is the **sum of weighted magnitudes** of other events, modulated by a phase function and updated over time.
 

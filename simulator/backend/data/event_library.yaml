@@ -1,0 +1,126 @@
+# QNTUM event library — latent shock templates.
+#
+# first_hop weights are PEAK LEVEL DISPLACEMENTS in z-units (robust SDs of the
+# target's monthly change) at intensity 1.0. The engine forces the derivative
+# of the phase envelope: the displacement builds during formation, holds while
+# stable, and unwinds during decay. Example: Oil_WTI weight 8 with a monthly
+# scale of ~7.5% log return ⇒ ≈ +60% (log) at the peak of a full-intensity
+# event, reverting as it fades.
+#
+# Second-hop effects (war → oil → inflation → Fed) propagate through the
+# fitted influence matrix and must NOT be encoded here.
+# formation / tau are in months. ranges give the analogue spread for the UI.
+
+- name: Geopolitical Conflict (oil region)
+  description: >
+    Armed conflict threatening oil supply (e.g. war involving Iran / Strait of
+    Hormuz). Intensity 1.0 ≈ Gulf-War-scale supply threat; 0.2 ≈ contained
+    strikes. Calibrated on: Gulf War 1990 (oil +150% over 3 months, reverted
+    within ~6), Iraq 2003 (+30%, fast relief decay), Abqaiq attack 2019
+    (+15% for weeks), Russia–Ukraine 2022 (+30% sustained), Israel–Iran
+    June 2025 (+12% for days, intensity ~0.2).
+  formation: 1
+  tau: 4
+  first_hop:
+    Oil_WTI: 8.0
+    VIX: 8.0
+    Gold: 3.0
+    Nasdaq: -2.5
+    Dollar_Index: 2.0
+  ranges:
+    Oil_WTI: [3.0, 14.0]
+    VIX: [4.0, 14.0]
+    Gold: [1.0, 5.0]
+    Nasdaq: [-5.0, -1.0]
+    Dollar_Index: [0.0, 4.0]
+  analogues:
+    - Gulf War 1990
+    - Iraq invasion 2003
+    - Abqaiq attack 2019
+    - Russia-Ukraine 2022
+    - Israel-Iran June 2025
+
+- name: Oil Supply Shock
+  description: >
+    Supply-side oil shock without broad conflict (embargo, OPEC cut, export
+    ban). Intensity 1.0 ≈ 1973-embargo scale. Calibrated on OPEC 1973
+    (+300% over 6 months), OPEC+ cuts 2016/2023 (+15–25%, intensity ~0.2).
+  formation: 2
+  tau: 8
+  first_hop:
+    Oil_WTI: 10.0
+    VIX: 2.0
+  ranges:
+    Oil_WTI: [4.0, 16.0]
+    VIX: [0.0, 4.0]
+  analogues:
+    - OPEC embargo 1973
+    - OPEC+ cuts 2016
+    - OPEC+ cuts 2023
+
+- name: Pandemic
+  description: >
+    Global pandemic with mobility restrictions. Intensity 1.0 = COVID-19 scale
+    (industrial production −15%, unemployment +10pp, oil −60%, VIX 15→60,
+    equities −30%). These were 10–40σ monthly moves; weights are accordingly
+    large. H1N1 2009 ≈ intensity 0.05.
+  formation: 2
+  tau: 6
+  first_hop:
+    Industrial_Production: -18.0
+    Unemployment: 40.0
+    Oil_WTI: -10.0
+    VIX: 12.0
+    Nasdaq: -7.0
+  ranges:
+    Industrial_Production: [-30.0, -8.0]
+    Unemployment: [10.0, 60.0]
+    Oil_WTI: [-16.0, -4.0]
+    VIX: [6.0, 18.0]
+    Nasdaq: [-10.0, -3.0]
+  analogues:
+    - COVID-19 2020
+    - H1N1 2009 (intensity ~0.05)
+
+- name: Financial Crisis
+  description: >
+    Systemic banking / credit stress. Intensity 1.0 = GFC 2008 scale
+    (VIX 20→60 monthly mean, equities −50% over 12 months, housing −20%,
+    flight to dollar and gold). March 2023 regional banks ≈ intensity 0.1.
+  formation: 6
+  tau: 12
+  first_hop:
+    VIX: 12.0
+    Nasdaq: -12.0
+    Housing: -25.0
+    Dollar_Index: 3.0
+    Gold: 3.0
+  ranges:
+    VIX: [6.0, 18.0]
+    Nasdaq: [-18.0, -6.0]
+    Housing: [-40.0, -10.0]
+    Dollar_Index: [0.0, 6.0]
+    Gold: [1.0, 6.0]
+  analogues:
+    - Global Financial Crisis 2008
+    - Eurozone crisis 2011 (intensity ~0.3)
+    - Regional banks March 2023 (intensity ~0.1)
+
+- name: Fiscal Stimulus
+  description: >
+    Large fiscal expansion (transfers, infrastructure). Intensity 1.0 =
+    CARES/ARP 2020-21 scale (~+3pp inflation contribution, industrial rebound,
+    strong equity tailwind). ARRA 2009 ≈ intensity 0.3.
+  formation: 3
+  tau: 12
+  first_hop:
+    Industrial_Production: 6.0
+    Nasdaq: 3.0
+    CPI_Inflation: 8.0
+  ranges:
+    Industrial_Production: [2.0, 10.0]
+    Nasdaq: [1.0, 6.0]
+    CPI_Inflation: [2.0, 14.0]
+  analogues:
+    - CARES Act + ARP 2020-21
+    - ARRA 2009

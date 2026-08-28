@@ -1,0 +1,27 @@
+# QNTUM coupling priors — textbook economics as a FALLBACK.
+#
+# Applied AFTER auto-discovery and only for pairs where discovery found
+# nothing: a prior never overrides what the data says. Weights are in
+# standardized increment space (target z-units per 1 z-unit of the source's
+# monthly change, one step ahead). Keep them modest — they are judgment
+# calls, not estimates; the spectral-radius cap still guards stability.
+#
+# lag_days: 0 = effect within the same monthly step, 30 = one month later.
+
+- target: Fed_Funds
+  source: CPI_Inflation
+  weight: 0.15
+  lag_days: 30
+  rationale: Policy rule — the Fed leans against inflation with a lag (Taylor 1993).
+
+- target: Fed_Funds
+  source: Unemployment
+  weight: -0.10
+  lag_days: 30
+  rationale: Dual mandate — rising unemployment pulls policy toward easing.
+
+- target: CPI_Inflation
+  source: Oil_WTI
+  weight: 0.30
+  lag_days: 30
+  rationale: Energy pass-through into headline CPI (~0.2-0.3pp per 10% oil move).
