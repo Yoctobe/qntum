@@ -20,7 +20,7 @@ def build_macro_engine() -> ScenarioEngine:
     )
 
 
-def test_baseline(engine):
+def check_baseline(engine):
     n_obs = len(engine.levels_df)
     res = engine.simulate(horizon=8, n_bootstrap=50)
 
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     print("ScenarioEngine validation")
     print("=" * 60)
     engine = build_macro_engine()
-    baseline = test_baseline(engine)
+    baseline = check_baseline(engine)
     test_future_pin(engine, baseline)
     test_counterfactual(engine, baseline)
     test_latent_event(engine, baseline)

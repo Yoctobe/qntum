@@ -1,0 +1,18 @@
+{
+  "url": "https://archive.ics.uci.edu/static/public/360/air+quality.zip",
+  "member": "AirQualityUCI.csv",
+  "citation": "De Vito et al., UCI Air Quality, 2008, DOI 10.24432/C59K5F",
+  "frequency": "hourly",
+  "columns": [
+    "CO(GT)",
+    "C6H6(GT)",
+    "NOx(GT)",
+    "NO2(GT)",
+    "T",
+    "RH",
+    "AH"
+  ],
+  "sha256": "d4a64013fb385288a8a48d9d193ca7079b2e1bbddf6f8d458feb8c08ab2b8a2a",
+  "rows": 9471,
+  "columns_count": 7
+}

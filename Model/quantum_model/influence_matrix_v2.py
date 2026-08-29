@@ -32,7 +32,7 @@ Storage Structure:
 
 from __future__ import annotations
 import numpy as np
-from typing import Callable, Optional, Union, Dict, Tuple, Set
+from typing import Callable, Optional, Dict, Tuple, Set
 from dataclasses import dataclass
 import warnings
 
@@ -66,6 +66,12 @@ class RelationshipEntry:
     significance: float = 0.0
     manually_set: bool = False
     time_lag: float = 0.0  # in days, max 1.0
+    lag_steps: int = 0
+    constraint: str = "estimated"
+    lower_bound: float = -np.inf
+    upper_bound: float = np.inf
+    feature_name: str = "product"
+    feature_transform: Optional[Callable] = None
     
     @property
     def order(self) -> int:
@@ -81,6 +87,8 @@ class RelationshipEntry:
         """
         if self.relationship_type == "nonlinear" and self.formula is not None:
             return float(self.formula(*values))
+        if self.feature_transform is not None:
+            return self.weight * float(self.feature_transform(*values))
         else:
             # Linear/multilinear: weight * product
             product = 1.0
@@ -151,6 +159,8 @@ class InfluenceMatrixV2:
         
         # Track which relationships are manual (never overwrite)
         self._manual_keys: Set[Tuple] = set()
+        self._forbidden_keys: Set[Tuple] = set()
+        self.intercepts = np.zeros(n_variables)
     
     # ──────────────────────────────────────────────────────────────────────────
     # MANUAL RELATIONSHIP DEFINITION
@@ -163,6 +173,8 @@ class InfluenceMatrixV2:
         weight: Optional[float] = None,
         formula: Optional[Callable] = None,
         time_lag: float = 0.0,
+        constraint: str = "fixed",
+        bounds: tuple[float, float] | None = None,
     ):
         """
         Manually define a relationship (will NEVER be overwritten by auto-fit).
@@ -210,6 +222,14 @@ class InfluenceMatrixV2:
             )
             time_lag = self.max_lag_days
         
+        if constraint not in {"fixed", "sign", "bounded"}:
+            raise ValueError("constraint must be fixed, sign, or bounded")
+        lower, upper = bounds or (-np.inf, np.inf)
+        if constraint == "sign" and weight is not None:
+            lower, upper = (0.0, np.inf) if weight >= 0 else (-np.inf, 0.0)
+        if lower > upper:
+            raise ValueError("constraint lower bound cannot exceed upper bound")
+
         key = (target, sources)
         
         if formula is not None:
@@ -223,6 +243,7 @@ class InfluenceMatrixV2:
                 significance=1.0,  # manually set = fully significant
                 manually_set=True,
                 time_lag=time_lag,
+                constraint="fixed",
             )
         elif weight is not None:
             # Linear/multilinear relationship
@@ -235,12 +256,22 @@ class InfluenceMatrixV2:
                 significance=1.0,
                 manually_set=True,
                 time_lag=time_lag,
+                constraint=constraint,
+                lower_bound=float(lower),
+                upper_bound=float(upper),
             )
         else:
             raise ValueError("Must provide either weight or formula")
         
         self._relationships[key] = entry
         self._manual_keys.add(key)
+
+    def forbid_relationship(self, target: int, sources: tuple) -> None:
+        """Prevent an edge from being discovered and remove any estimated copy."""
+        key = (target, tuple(sources))
+        self._relationships.pop(key, None)
+        self._manual_keys.discard(key)
+        self._forbidden_keys.add(key)
     
     def set_pair(self, target: int, source: int, weight: float, time_lag: float = 0.0):
         """Convenience: set a pairwise relationship."""
@@ -267,6 +298,11 @@ class InfluenceMatrixV2:
         dt: float = 1.0,
         search_lags: bool = True,
         lag_search_steps: int = 10,
+        max_lag_steps: int = 1,
+        alpha: float = 0.0,
+        beta: float = 1.0,
+        l1_penalty: float = 0.01,
+        candidate_library: Optional[list[dict]] = None,
     ):
         """
         Cautiously discover relationships from data.
@@ -298,15 +334,12 @@ class InfluenceMatrixV2:
             warnings.warn("Too few time steps for reliable fitting, skipping auto-discovery")
             return
         
-        # Maximum lag = one time step (parameter-agnostic across dt)
-        max_lag_days = float(dt)
-        max_lag_steps = min(max(1, int(round(max_lag_days / dt))), T - 2)
-        
-        # Lag candidates to test (in days)
-        if search_lags and lag_search_steps > 1:
-            lag_candidates = np.linspace(0, max_lag_days, lag_search_steps)
+        max_lag_steps = min(max(0, int(max_lag_steps)), T - 2)
+
+        if search_lags:
+            lag_candidates = np.arange(max_lag_steps + 1, dtype=float) * dt
         else:
-            lag_candidates = np.array([0.0])  # no lag search, instant only
+            lag_candidates = np.array([0.0])
         
         # Discover pairs (order 2)
         if discover_pairs and 2 <= self.max_order:
@@ -319,6 +352,43 @@ class InfluenceMatrixV2:
         # Discover quadruplets (order 4)
         if discover_quadruplets and 4 <= self.max_order:
             self._fit_quadruplets(data, dt, lag_candidates)
+        if candidate_library:
+            self._fit_candidate_library(data, dt, candidate_library)
+
+        self._joint_refit(data, dt, alpha, beta, l1_penalty)
+
+    def _fit_candidate_library(
+        self,
+        data: np.ndarray,
+        dt: float,
+        candidates: list[dict],
+    ) -> None:
+        for candidate in candidates:
+            target = int(candidate["target"])
+            sources = tuple(candidate["sources"])
+            key = (target, sources)
+            if key in self._relationships or key in self._forbidden_keys:
+                continue
+            transform = candidate["transform"]
+            lag_steps = int(candidate.get("lag_steps", 0))
+            rows = np.arange(lag_steps, len(data) - 1)
+            values = data[rows - lag_steps][:, sources]
+            feature = np.asarray([transform(*row) for row in values], dtype=float)
+            target_values = data[rows + 1, target]
+            feature, target_values = self._valid_overlap(feature, target_values)
+            corr = self._safe_corr(feature, target_values)
+            if corr is None or abs(corr) < self.min_corr:
+                continue
+            self._relationships[key] = RelationshipEntry(
+                target_idx=target,
+                source_indices=sources,
+                relationship_type="auto",
+                significance=abs(corr),
+                time_lag=lag_steps * dt,
+                lag_steps=lag_steps,
+                feature_name=str(candidate.get("name", "custom")),
+                feature_transform=transform,
+            )
     
     def _fit_pairs(self, data: np.ndarray, dt: float, lag_candidates: np.ndarray):
         """
@@ -341,7 +411,7 @@ class InfluenceMatrixV2:
                 key = (target, (source,))
                 
                 # Skip if manually set
-                if key in self._manual_keys:
+                if key in self._manual_keys or key in self._forbidden_keys:
                     continue
                 
                 # Search over lag candidates
@@ -350,7 +420,7 @@ class InfluenceMatrixV2:
                 best_weight = 0.0
                 
                 for lag_days in lag_candidates:
-                    lag_steps = int(lag_days / dt)
+                    lag_steps = int(round(lag_days / dt))
                     
                     # Need enough data after lag
                     if lag_steps >= T - 1:
@@ -387,6 +457,7 @@ class InfluenceMatrixV2:
                         significance=abs(best_corr),
                         manually_set=False,
                         time_lag=best_lag,
+                        lag_steps=int(round(best_lag / dt)),
                     )
                     
                     self._relationships[key] = entry
@@ -439,7 +510,7 @@ class InfluenceMatrixV2:
                 for s2 in pair_sources[i+1:]:
                     key = (target, (s1, s2))
                     
-                    if key in self._manual_keys:
+                    if key in self._manual_keys or key in self._forbidden_keys:
                         continue
                     
                     if count >= max_triplets_per_target:
@@ -451,7 +522,7 @@ class InfluenceMatrixV2:
                     best_weight = 0.0
                     
                     for lag_days in lag_candidates:
-                        lag_steps = int(lag_days / dt)
+                        lag_steps = int(round(lag_days / dt))
                         
                         if lag_steps >= T - 1:
                             continue
@@ -481,6 +552,7 @@ class InfluenceMatrixV2:
                             significance=abs(best_corr),
                             manually_set=False,
                             time_lag=best_lag,
+                            lag_steps=int(round(best_lag / dt)),
                         )
                         
                         self._relationships[key] = entry
@@ -516,7 +588,7 @@ class InfluenceMatrixV2:
                     
                     key = (target, tuple(sorted([s1, s2, s3])))
                     
-                    if key in self._manual_keys:
+                    if key in self._manual_keys or key in self._forbidden_keys:
                         continue
                     
                     # Search over lags
@@ -525,7 +597,7 @@ class InfluenceMatrixV2:
                     best_weight = 0.0
                     
                     for lag_days in lag_candidates:
-                        lag_steps = int(lag_days / dt)
+                        lag_steps = int(round(lag_days / dt))
                         
                         if lag_steps >= T - 1:
                             continue
@@ -557,6 +629,7 @@ class InfluenceMatrixV2:
                             significance=abs(best_corr),
                             manually_set=False,
                             time_lag=best_lag,
+                            lag_steps=int(round(best_lag / dt)),
                         )
                         
                         self._relationships[key] = entry
@@ -566,6 +639,115 @@ class InfluenceMatrixV2:
         """Fit linear weight via least squares."""
         denom = float(np.dot(x, x)) + 1e-8
         return float(np.dot(x, y) / denom)
+
+    def _joint_refit(
+        self,
+        data: np.ndarray,
+        dt: float,
+        alpha: float,
+        beta: float,
+        l1_penalty: float,
+    ) -> None:
+        """Jointly estimate all non-fixed terms for each target."""
+        if beta <= 0:
+            raise ValueError("beta must be positive for joint estimation")
+
+        for entry in self._relationships.values():
+            entry.lag_steps = int(round(entry.time_lag / dt))
+
+        for target in range(self.n):
+            entries = self.get_relationships_for_target(target)
+            estimated = [
+                entry for entry in entries
+                if not (entry.manually_set and entry.constraint == "fixed")
+                and entry.relationship_type != "nonlinear"
+            ]
+            max_lag = max((entry.lag_steps for entry in entries), default=0)
+            rows = np.arange(max_lag, len(data) - 1)
+            if len(rows) < 3:
+                continue
+
+            y = data[rows + 1, target] - alpha * data[rows, target]
+            fixed = np.zeros(len(rows))
+            for entry in entries:
+                if entry in estimated:
+                    continue
+                values = [
+                    data[rows - entry.lag_steps, source]
+                    for source in entry.source_indices
+                ]
+                fixed += beta * np.asarray(
+                    [entry.evaluate(*items) for items in zip(*values)]
+                )
+            y = y - fixed
+
+            if not estimated:
+                finite = np.isfinite(y)
+                self.intercepts[target] = float(np.mean(y[finite])) if finite.any() else 0.0
+                continue
+
+            columns = []
+            for entry in estimated:
+                values = data[rows - entry.lag_steps][:, entry.source_indices]
+                if entry.feature_transform is None:
+                    columns.append(np.prod(values, axis=1))
+                else:
+                    columns.append(
+                        np.asarray([entry.feature_transform(*row) for row in values])
+                    )
+            X = np.column_stack(columns)
+            valid = np.isfinite(y) & np.all(np.isfinite(X), axis=1)
+            X = X[valid]
+            y_valid = y[valid]
+            if len(y_valid) < max(3, len(estimated)):
+                continue
+
+            x_mean = X.mean(axis=0)
+            y_mean = float(y_valid.mean())
+            X_centered = X - x_mean
+            y_centered = y_valid - y_mean
+            coefficients = self._projected_lasso(
+                X_centered,
+                y_centered,
+                np.asarray([entry.lower_bound * beta for entry in estimated]),
+                np.asarray([entry.upper_bound * beta for entry in estimated]),
+                l1_penalty,
+            )
+            self.intercepts[target] = y_mean - float(x_mean @ coefficients)
+            for entry, coefficient in zip(estimated, coefficients):
+                entry.weight = float(coefficient / beta)
+
+        removable = [
+            key for key, entry in self._relationships.items()
+            if not entry.manually_set and abs(entry.weight) < 1e-8
+        ]
+        for key in removable:
+            del self._relationships[key]
+
+    @staticmethod
+    def _projected_lasso(
+        X: np.ndarray,
+        y: np.ndarray,
+        lower: np.ndarray,
+        upper: np.ndarray,
+        penalty: float,
+        iterations: int = 1000,
+    ) -> np.ndarray:
+        """Proximal-gradient lasso with box/sign projection."""
+        spectral_norm = float(np.linalg.norm(X, ord=2))
+        step = 1.0 / max(spectral_norm * spectral_norm / len(X), 1e-12)
+        coefficients = np.zeros(X.shape[1])
+        threshold = step * max(0.0, penalty)
+        for _ in range(iterations):
+            gradient = X.T @ (X @ coefficients - y) / len(X)
+            candidate = coefficients - step * gradient
+            candidate = np.sign(candidate) * np.maximum(np.abs(candidate) - threshold, 0.0)
+            candidate = np.clip(candidate, lower, upper)
+            if np.max(np.abs(candidate - coefficients)) < 1e-9:
+                coefficients = candidate
+                break
+            coefficients = candidate
+        return coefficients
     
     # ──────────────────────────────────────────────────────────────────────────
     # APPLY RELATIONSHIPS WITH TIME LAGS
@@ -608,10 +790,7 @@ class InfluenceMatrixV2:
         for key, entry in self._relationships.items():
             target = entry.target_idx
             sources = entry.source_indices
-            lag_days = entry.time_lag
-            
-            # Convert lag to time steps
-            lag_steps = int(round(lag_days / dt))
+            lag_steps = entry.lag_steps or int(round(entry.time_lag / dt))
             
             # Determine which historical index to use
             # M_history[-1] is current (t), M_history[-1 - lag_steps] is (t - lag)

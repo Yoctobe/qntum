@@ -28,8 +28,12 @@ from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Callable
+from typing import Optional
 from .influence_matrix_v2 import InfluenceMatrixV2
+from .stability import (
+    stability_report as build_stability_report,
+    stabilize_beta as stabilize_companion_beta,
+)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -63,6 +67,12 @@ class Event:
     initial_magnitude: float
     name: str
     base_level: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.tf < 0:
+            raise ValueError("tf must be non-negative")
+        if self.tau <= 0:
+            raise ValueError("tau must be positive")
     
     def phase(self, t: float) -> float:
         """
@@ -139,12 +149,21 @@ class QuantumV2:
         beta: float = 0.50,
         dt: float = 1.0,
         max_history_steps: int = 100,
+        intercept: Optional[np.ndarray] = None,
     ):
         self.I = influence
         self.alpha = alpha
         self.beta = beta
         self.dt = dt
         self.max_history_steps = max_history_steps
+        self.intercept = (
+            np.zeros(influence.n)
+            if intercept is None
+            else np.asarray(intercept, dtype=float).copy()
+        )
+        if self.intercept.shape != (influence.n,):
+            raise ValueError("intercept must have one value per variable")
+        self.stability = None
         
         # History buffer for lag handling
         self._history_buffer = None
@@ -198,6 +217,7 @@ class QuantumV2:
             M_next[i] = (
                 self.alpha * M[i]
                 + self.beta * phi * influence[i]
+                + self.intercept[i]
                 + event.base_level
             )
         
@@ -281,6 +301,8 @@ class QuantumV2:
         n_bootstrap: int = 0,
         noise_scale: float = 0.03,
         seed: int = 42,
+        residuals: Optional[np.ndarray] = None,
+        block_length: int = 1,
     ) -> dict:
         """
         Multi-step ahead forecast.
@@ -350,8 +372,12 @@ class QuantumV2:
                 M = M0.copy()
                 for k in range(n_steps):
                     M = self.step(float(k + 1), M, events)
-                    # Add noise (grows slightly with horizon)
-                    noise = rng.normal(0.0, noise_scale * (1.0 + 0.03 * k), size=n)
+                    if residuals is not None and len(residuals):
+                        if k % max(1, block_length) == 0:
+                            block_start = int(rng.integers(0, max(1, len(residuals) - block_length + 1)))
+                        noise = residuals[min(block_start + k % max(1, block_length), len(residuals) - 1)]
+                    else:
+                        noise = rng.normal(0.0, noise_scale, size=n)
                     M = M + noise
                     samples[b, k] = M
             
@@ -393,54 +419,10 @@ class QuantumV2:
             'n_train' : number of training steps
             'n_test'  : number of test steps
         """
-        T, n = data.shape
-        split = int(T * train_fraction)
-        
-        test_data = data[split:]
-        n_test = len(test_data) - 1
-        
-        # Create events
-        events = [
-            Event(
-                t0=0,
-                tf=0.0,
-                tau=float(n_test + 10),
-                initial_magnitude=float(data[split - 1, i]),
-                base_level=0.0,
-                name=variable_names[i],
-            )
-            for i in range(n)
-        ]
-        
-        # Reset history and use training data as initial history
-        history_window = min(self.max_history_steps, split)
-        initial_history = data[split - history_window:split]
-        self._history_buffer = initial_history.copy()
-        
-        # Rolling one-step predictions
-        predictions = np.zeros((n_test, n))
-        for k in range(n_test):
-            M_prev = test_data[k]
-            predictions[k] = self.step(1.0, M_prev, events)
-        
-        actuals = test_data[1:]
-        
-        # Metrics
-        mae = float(np.mean(np.abs(predictions - actuals)))
-        rmse = float(np.sqrt(np.mean((predictions - actuals) ** 2)))
-        
-        correlations = {}
-        for i in range(n):
-            corr = np.corrcoef(predictions[:, i], actuals[:, i])[0, 1]
-            correlations[variable_names[i]] = 0.0 if np.isnan(corr) else float(corr)
-        
-        return {
-            "mae": mae,
-            "rmse": rmse,
-            "correlations": correlations,
-            "n_train": split,
-            "n_test": n_test,
-        }
+        from .evaluation import evaluate_one_step
+
+        split = int(len(data) * train_fraction)
+        return evaluate_one_step(self, data, variable_names, split)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -456,9 +438,7 @@ def spectral_radius(influence: InfluenceMatrixV2, alpha: float, beta: float) -> 
     (levels flatten) instead of exploding. Higher-order relationships are
     not included in this linearization.
     """
-    W = influence.to_matrix(order=2)
-    A = alpha * np.eye(influence.n) + beta * W
-    return float(np.max(np.abs(np.linalg.eigvals(A))))
+    return build_stability_report(influence, alpha, beta).spectral_radius
 
 
 def stabilize_beta(
@@ -472,24 +452,7 @@ def stabilize_beta(
 
     Requires α < max_rho so a solution always exists (β → 0 gives ρ = α).
     """
-    if alpha >= max_rho:
-        raise ValueError(f"alpha={alpha} must be < max_rho={max_rho} for stability")
-
-    rho = spectral_radius(influence, alpha, beta)
-    if rho <= max_rho:
-        return beta
-
-    original_beta = beta
-    while rho > max_rho and beta > 1e-6:
-        beta *= 0.9
-        rho = spectral_radius(influence, alpha, beta)
-
-    print(
-        f"  ⚠ Stability cap: spectral radius was "
-        f"{spectral_radius(influence, alpha, original_beta):.3f} > {max_rho}, "
-        f"β reduced {original_beta:.3f} → {beta:.3f} (ρ = {rho:.3f})"
-    )
-    return beta
+    return stabilize_companion_beta(influence, alpha, beta, max_rho)[0]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -500,6 +463,7 @@ def build_quantum_v2(
     normalized_data: np.ndarray,
     variable_names: list[str],
     manual_relationships: Optional[dict] = None,
+    relationship_constraints: Optional[dict] = None,
     min_corr: float = 0.15,
     max_order: int = 3,
     discover_pairs: bool = True,
@@ -510,6 +474,9 @@ def build_quantum_v2(
     dt: float = 1.0,
     search_lags: bool = True,
     lag_search_steps: int = 10,
+    max_lag_steps: int = 1,
+    l1_penalty: float = 0.01,
+    candidate_library: Optional[list[dict]] = None,
     max_history_steps: int = 100,
     max_spectral_radius: float = 0.98,
 ) -> QuantumV2:
@@ -613,6 +580,28 @@ def build_quantum_v2(
                 else:
                     raise ValueError(f"Invalid formula entry: {entry}")
                 I.set_relationship(target, sources, formula=formula, time_lag=time_lag)
+
+    if relationship_constraints:
+        for target, sources in relationship_constraints.get("forbidden", []):
+            I.forbid_relationship(target, tuple(sources))
+        for target, sources, sign, *lag in relationship_constraints.get("signs", []):
+            marker = 1.0 if sign >= 0 else -1.0
+            I.set_relationship(
+                target,
+                tuple(sources),
+                weight=marker,
+                time_lag=float(lag[0]) if lag else 0.0,
+                constraint="sign",
+            )
+        for target, sources, lower, upper, *lag in relationship_constraints.get("bounds", []):
+            I.set_relationship(
+                target,
+                tuple(sources),
+                weight=(float(lower) + float(upper)) / 2.0,
+                time_lag=float(lag[0]) if lag else 0.0,
+                constraint="bounded",
+                bounds=(float(lower), float(upper)),
+            )
     
     # Auto-discover relationships
     I.fit(
@@ -623,12 +612,25 @@ def build_quantum_v2(
         dt=dt,
         search_lags=search_lags,
         lag_search_steps=lag_search_steps,
+        max_lag_steps=max_lag_steps,
+        alpha=alpha,
+        beta=beta,
+        l1_penalty=l1_penalty,
+        candidate_library=candidate_library,
     )
     
     # Enforce contractive dynamics so multi-step forecasts cannot explode
-    beta = stabilize_beta(I, alpha, beta, max_rho=max_spectral_radius)
+    beta, report = stabilize_companion_beta(I, alpha, beta, max_rho=max_spectral_radius)
     
     # Build model
-    model = QuantumV2(I, alpha=alpha, beta=beta, dt=dt, max_history_steps=max_history_steps)
+    model = QuantumV2(
+        I,
+        alpha=alpha,
+        beta=beta,
+        dt=dt,
+        max_history_steps=max_history_steps,
+        intercept=I.intercepts,
+    )
+    model.stability = report
     
     return model

@@ -343,15 +343,16 @@ class PhysicsTestSuite:
         print(f"Variables: {variable_names}")
         print(f"Data shape: {data.shape}")
         
-        # Normalize data
+        # Fit normalization on the chronological training segment only.
         prep = DataPreprocessor()
-        normalized, params = prep.transform(data, variable_names)
+        split = (len(data) - 1) // 2
+        params = prep.fit(data[: split + 1], variable_names)
+        normalized = prep.apply_params(data, params)
         
         print(f"\nNormalized shape: {normalized.shape}")
         print(prep.summary(params))
         
         # Split train/test
-        split = len(normalized) // 2
         train_data = normalized[:split]
         test_data = normalized[split:]
         

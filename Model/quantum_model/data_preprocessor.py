@@ -2,7 +2,7 @@
 DATA PREPROCESSOR for QNTUM
 ═══════════════════════════════════════════════════════════════════════════════
 
-Transforms level values into stationary, robustly standardized increments.
+Transforms level values into robustly standardized increments.
 
 KEY PRINCIPLE:
     All CSV values contain level data (prices, rates, volumes, etc.).
@@ -125,30 +125,22 @@ class DataPreprocessor:
             transform_overrides,
         )
 
-    def transform(
+    def fit(
         self,
         level_data: np.ndarray,
         variable_names: list[str],
         transform_overrides: Optional[dict[str, str]] = None,
-    ) -> Tuple[np.ndarray, NormalizationParams]:
-        """
-        Core transformation: level values → standardized increments.
-
-        Parameters
-        ----------
-        level_data          : (T, n) array of level values
-        variable_names      : list of n variable names
-        transform_overrides : {variable_name: "diff" | "log_diff"}
-
-        Returns
-        -------
-        normalized : (T-1, n) array of standardized increments
-        params     : NormalizationParams for inverse transformation
-        """
+    ) -> NormalizationParams:
+        """Estimate transform choices and robust scaling from training levels."""
+        level_data = np.asarray(level_data, dtype=float)
+        if level_data.ndim != 2:
+            raise ValueError("level_data must be a 2D array")
         T, n = level_data.shape
 
         if T < 2:
             raise ValueError("Need at least 2 time steps to compute increments")
+        if len(variable_names) != n:
+            raise ValueError("variable_names must match the data columns")
 
         overrides = transform_overrides or {}
         transform_types = []
@@ -184,17 +176,27 @@ class DataPreprocessor:
             if not np.isfinite(centers[i]):
                 centers[i] = 0.0
 
-        normalized = (increments - centers[None, :]) / scale_factors[None, :]
-
-        params = NormalizationParams(
-            variable_names=variable_names,
+        return NormalizationParams(
+            variable_names=list(variable_names),
             transform_types=transform_types,
             centers=centers,
             scale_factors=scale_factors,
             first_values=first_values,
         )
 
-        return normalized, params
+    def transform(
+        self,
+        level_data: np.ndarray,
+        variable_names: list[str],
+        transform_overrides: Optional[dict[str, str]] = None,
+    ) -> Tuple[np.ndarray, NormalizationParams]:
+        """Fit parameters and transform one panel.
+
+        Evaluation code must call ``fit`` on training levels and ``apply_params``
+        on the complete chronological panel.
+        """
+        params = self.fit(level_data, variable_names, transform_overrides)
+        return self.apply_params(level_data, params), params
 
     @staticmethod
     def _increments(level_data: np.ndarray, transform_types: list[str]) -> np.ndarray:
@@ -219,8 +221,13 @@ class DataPreprocessor:
         Used to normalize the simulation panel with statistics estimated on a
         longer fitting panel, so both live in the same z-space.
         """
+        level_data = np.asarray(level_data, dtype=float)
+        if level_data.ndim != 2 or level_data.shape[1] != len(params.variable_names):
+            raise ValueError("level_data columns must match normalization parameters")
         increments = self._increments(level_data, params.transform_types)
         return (increments - params.centers[None, :]) / params.scale_factors[None, :]
+
+    transform_with_params = apply_params
 
     def inverse_transform(
         self,

@@ -6,6 +6,8 @@ from .quantum_v1 import normalize_rows, clamp_to_bound
 from .physics_tests import PhysicsTestSuite
 from .simulator import ScenarioEngine, Pin, EventInstance
 from .event_library import EventLibrary, EventTemplate
+from .pipeline import PreprocessingPipeline, PreparedSplit
+from .stability import StabilityReport, companion_matrix, stability_report
 
 __all__ = [
     'DataPreprocessor',
@@ -23,4 +25,9 @@ __all__ = [
     'EventInstance',
     'EventLibrary',
     'EventTemplate',
+    'PreprocessingPipeline',
+    'PreparedSplit',
+    'StabilityReport',
+    'companion_matrix',
+    'stability_report',
 ]

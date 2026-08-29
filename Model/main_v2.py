@@ -24,7 +24,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from quantum_model.data_preprocessor import DataPreprocessor, load_and_normalize
+from quantum_model.data_preprocessor import DataPreprocessor
+from quantum_model.pipeline import PreprocessingPipeline
 from quantum_model.influence_matrix_v2 import InfluenceMatrixV2
 from quantum_model.quantum_v2 import QuantumV2, build_quantum_v2, Event
 from quantum_model.physics_tests import PhysicsTestSuite
@@ -93,18 +94,22 @@ def run_financial_forecast(
     # Load and normalize.
     # Default transform is first difference (safe for rates, zero-crossing and
     # negative series); positive multiplicative series opt into log-differences.
-    normalized, params, variable_names = load_and_normalize(
-        csv_path,
+    import pandas as pd
+    from dateutil.relativedelta import relativedelta
+
+    df_with_dates = pd.read_csv(csv_path)
+    prepared = PreprocessingPipeline().prepare_dataframe(
+        df_with_dates,
+        train_fraction=0.7,
         date_column="Date",
         skip_columns=["Source"],
         transform_overrides={"SP500": "log_diff", "DXY": "log_diff"},
     )
+    normalized = prepared.normalized
+    params = prepared.params
+    variable_names = prepared.variable_names
     
     # Load dates from CSV and detect frequency
-    import pandas as pd
-    from dateutil.relativedelta import relativedelta
-    
-    df_with_dates = pd.read_csv(csv_path)
     if 'Date' in df_with_dates.columns:
         dates = pd.to_datetime(df_with_dates['Date'])
         # Detect frequency and calculate dt (time step in days)
@@ -144,8 +149,8 @@ def run_financial_forecast(
     print("\nUsing physics-validated model parameters (α=0.85, β=0.50, auto-discovery)")
     
     # Split train/test
-    split = int(len(normalized) * 0.7)
-    train_data = normalized[:split]
+    split = prepared.split_increment
+    train_data = prepared.train_normalized
     test_data = normalized[split:]
     
     print(f"\nTrain/test split: {split}/{len(normalized) - split} steps")

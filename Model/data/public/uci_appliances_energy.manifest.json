@@ -1,0 +1,19 @@
+{
+  "url": "https://archive.ics.uci.edu/static/public/374/appliances+energy+prediction.zip",
+  "member": "energydata_complete.csv",
+  "citation": "Candanedo et al., UCI Appliances Energy Prediction, 2017, DOI 10.24432/C5VC8G",
+  "frequency": "10 minutes",
+  "columns": [
+    "Appliances",
+    "lights",
+    "T1",
+    "RH_1",
+    "T2",
+    "RH_2",
+    "T_out",
+    "RH_out"
+  ],
+  "sha256": "2fccf354445d886e7917620b0195db1f3e3e34d5a067a93b844694a4c561255a",
+  "rows": 19735,
+  "columns_count": 8
+}

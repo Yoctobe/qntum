@@ -1,0 +1,27 @@
+{
+  "git_revision": "7506b7af3a8ec26a2d8c933dd8a8a72afebe87ff",
+  "python": "3.14.2",
+  "platform": "macOS-15.7.4-arm64-arm-64bit-Mach-O",
+  "dependencies": {
+    "numpy": "2.4.0",
+    "pandas": "3.0.1",
+    "scipy": "not-installed",
+    "matplotlib": "3.10.8"
+  },
+  "mode": "full",
+  "public_datasets_included": true,
+  "artifacts": {
+    "table4_records": 1800,
+    "table5_panels": 3,
+    "table6_records": 100,
+    "event_study": {
+      "study": "declared_event_envelope",
+      "declared_phase_mae": 0.014829596657346004,
+      "always_on_mae": 0.2642465684953472,
+      "onset": 35,
+      "formation": 10,
+      "plateau": 30,
+      "seed": 7
+    }
+  }
+}

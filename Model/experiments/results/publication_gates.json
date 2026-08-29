@@ -1,0 +1,11 @@
+{
+  "gates": {
+    "artifacts_present": true,
+    "two_observed_panels": true,
+    "beats_persistence_majority": true,
+    "interval_coverage": false,
+    "no_capped_divergence": true
+  },
+  "ready_for_forecasting_journal": false,
+  "fallback_positioning": "auditable scenario-engine software"
+}
